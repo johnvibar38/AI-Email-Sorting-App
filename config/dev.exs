@@ -5,7 +5,7 @@ config :jump, Jump.Repo,
   username: System.get_env("POSTGRES_USER") || "postgres",
   password: System.get_env("POSTGRES_PASSWORD") || "aiddyr",
   hostname: System.get_env("POSTGRES_HOST") || "localhost",
-  database: "jump_db",
+  database: System.get_env("DATABASE") || "jump_db",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
