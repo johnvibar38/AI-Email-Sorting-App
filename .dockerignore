@@ -1,0 +1,36 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+*.md
+
+# Development files
+.env
+.env.local
+.env.*.local
+
+# Elixir
+_build/
+deps/
+cover/
+*.ez
+
+# Assets
+assets/node_modules/
+priv/static/assets/app.*.js
+priv/static/assets/app.*.css
+
+# Test files
+test/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Misc
+*.log
+

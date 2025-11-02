@@ -1,0 +1,40 @@
+services:
+  # Web Service
+  - type: web
+    name: jump-email-app
+    env: elixir
+    region: oregon
+    plan: free
+    buildCommand: mix deps.get --only prod && MIX_ENV=prod mix compile && MIX_ENV=prod mix assets.deploy && MIX_ENV=prod mix release
+    startCommand: _build/prod/rel/jump/bin/jump start
+    healthCheckPath: /
+    envVars:
+      - key: MIX_ENV
+        value: prod
+      - key: SECRET_KEY_BASE
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: jump-db
+          property: connectionString
+      - key: PHX_HOST
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: CLOAK_KEY
+        generateValue: true
+      - key: POOL_SIZE
+        value: 10
+
+databases:
+  # PostgreSQL Database
+  - name: jump-db
+    databaseName: jump_db
+    user: jump_user
+    region: oregon
+    plan: free
+
