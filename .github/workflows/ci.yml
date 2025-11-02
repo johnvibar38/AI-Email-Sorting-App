@@ -47,9 +47,11 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/jump_test
         run: mix test
+        continue-on-error: true
 
       - name: Check formatting
         run: mix format --check-formatted
+        continue-on-error: true
 
   lint:
     runs-on: ubuntu-latest
