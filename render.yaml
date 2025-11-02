@@ -6,11 +6,17 @@ services:
     region: oregon
     plan: free
     buildCommand: |
+      echo "Node version:" && node --version
+      echo "NPM version:" && npm --version
       mix deps.get --only prod
       MIX_ENV=prod mix compile
+      echo "Installing npm packages..."
       cd assets
+      rm -rf node_modules package-lock.json
       npm install
+      ls -la node_modules | grep topbar
       cd ..
+      echo "Running assets deploy..."
       MIX_ENV=prod mix assets.deploy
       MIX_ENV=prod mix release
     startCommand: _build/prod/rel/jump/bin/jump start
