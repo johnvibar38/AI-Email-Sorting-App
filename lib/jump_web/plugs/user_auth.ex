@@ -8,12 +8,13 @@ defmodule JumpWeb.UserAuth do
 
   # Make the remember me cookie valid for 60 days.
   @max_age 60 * 60 * 24 * 60
+  @token_max_age @max_age
 
   def on_mount(:default, _params, session, socket) do
     socket = Phoenix.Component.assign_new(socket, :current_user, fn ->
       case session do
         %{"user_token" => user_token} ->
-          case Phoenix.Token.verify(socket, "user socket", user_token, max_age: 60 * 60 * 24 * 60) do
+          case Phoenix.Token.verify(socket, "user socket", user_token, max_age: @token_max_age) do
             {:ok, user_id} -> Accounts.get_user(user_id)
             {:error, _} -> nil
           end
@@ -33,7 +34,7 @@ defmodule JumpWeb.UserAuth do
     socket = Phoenix.Component.assign_new(socket, :current_user, fn ->
       case session do
         %{"user_token" => user_token} ->
-          case Phoenix.Token.verify(socket, "user socket", user_token, max_age: 60 * 60 * 24 * 60) do
+          case Phoenix.Token.verify(socket, "user socket", user_token, max_age: @token_max_age) do
             {:ok, user_id} -> Accounts.get_user(user_id)
             {:error, _} -> nil
           end
@@ -49,7 +50,7 @@ defmodule JumpWeb.UserAuth do
 
     user =
       if user_token do
-        case Phoenix.Token.verify(conn, "user socket", user_token, max_age: 60 * 60 * 24 * 60) do
+        case Phoenix.Token.verify(conn, "user socket", user_token, max_age: @token_max_age) do
           {:ok, user_id} -> Accounts.get_user(user_id)
           {:error, _} -> nil
         end

@@ -48,15 +48,15 @@ defmodule JumpWeb.CategoryLiveTest do
 
     test "redirects when category not found", %{conn: conn, user: user} do
       conn = log_in_user(conn, user)
-      {:ok, _view, _html} = live(conn, ~p"/categories/999999")
-
-      # Should redirect to dashboard
-      assert_redirect(_view, ~p"/dashboard")
+      
+      # Should redirect to dashboard immediately
+      assert {:error, {:live_redirect, %{to: "/dashboard"}}} = 
+        live(conn, ~p"/categories/999999")
     end
   end
 
   defp log_in_user(conn, user) do
-    token = Phoenix.Token.sign(JumpWeb.Endpoint, "user auth", user.id)
+    token = Phoenix.Token.sign(JumpWeb.Endpoint, "user socket", user.id)
 
     conn
     |> Phoenix.ConnTest.init_test_session(%{})

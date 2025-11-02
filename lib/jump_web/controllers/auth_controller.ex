@@ -151,25 +151,26 @@ defmodule JumpWeb.AuthController do
     Accounts.create_or_update_google_account(user.id, auth.info.email, tokens)
   end
 
-  defp create_google_account_for_user(user, %Ueberauth.Auth{} = auth) do
-    # Just create/update the Google account, don't touch the user
-    credentials = auth.credentials
-    
-    expires_at = 
-      case credentials.expires_at do
-        nil -> DateTime.add(DateTime.utc_now(), credentials.expires || 3600, :second)
-        timestamp when is_integer(timestamp) -> DateTime.from_unix!(timestamp)
-        %DateTime{} = dt -> dt
-      end
-
-    tokens = %{
-      access_token: credentials.token,
-      refresh_token: credentials.refresh_token || "",
-      expires_at: expires_at
-    }
-
-    Accounts.create_or_update_google_account(user.id, auth.info.email, tokens)
-  end
+  # NOTE: This function is kept for reference but currently unused
+  # defp create_google_account_for_user(user, %Ueberauth.Auth{} = auth) do
+  #   # Just create/update the Google account, don't touch the user
+  #   credentials = auth.credentials
+  #   
+  #   expires_at = 
+  #     case credentials.expires_at do
+  #       nil -> DateTime.add(DateTime.utc_now(), credentials.expires || 3600, :second)
+  #       timestamp when is_integer(timestamp) -> DateTime.from_unix!(timestamp)
+  #       %DateTime{} = dt -> dt
+  #     end
+  #
+  #   tokens = %{
+  #     access_token: credentials.token,
+  #     refresh_token: credentials.refresh_token || "",
+  #     expires_at: expires_at
+  #   }
+  #
+  #   Accounts.create_or_update_google_account(user.id, auth.info.email, tokens)
+  # end
 
   defp build_add_account_url(conn) do
     client_id = Application.get_env(:ueberauth, Ueberauth.Strategy.Google.OAuth)[:client_id]

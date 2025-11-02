@@ -83,7 +83,7 @@ defmodule JumpWeb.AccountEmailsLive.Show do
     if selected_ids != [] do
       # Schedule unsubscribe jobs for each email
       Enum.each(selected_ids, fn email_id ->
-        Unsubscribe.schedule_unsubscribe(email_id)
+        Unsubscribe.queue_unsubscribe_job(email_id)
       end)
 
       {:noreply,

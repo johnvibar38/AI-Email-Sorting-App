@@ -51,8 +51,8 @@ defmodule Jump.MixProject do
       {:httpoison, "~> 2.0"},
       {:openai, "~> 0.6.0"},
       {:cloak_ecto, "~> 1.2"},
-      {:wallaby, "~> 0.30", only: :test},
-      {:chrome_remote_interface, "~> 0.4"},
+      {:wallaby, "~> 0.30", only: :test, runtime: false},
+      {:chrome_remote_interface, "~> 0.4", only: :test, runtime: false},
       {:floki, "~> 0.34"}
     ]
   end

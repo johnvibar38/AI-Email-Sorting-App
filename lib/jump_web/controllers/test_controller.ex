@@ -125,8 +125,8 @@ defmodule JumpWeb.TestController do
         category = Enum.find(test_categories, fn c -> c.id == category_id end)
         "<span class='success'>✓ Success!</span>\nCategorized as: #{if category, do: category.name, else: "Unknown"} (ID: #{category_id})"
 
-      {:error, reason} ->
-        "<span class='error'>❌ Error</span>\n#{inspect(reason, pretty: true)}"
+      _ ->
+        "<span class='error'>❌ Unexpected response</span>"
     end
   end
 
@@ -141,8 +141,8 @@ defmodule JumpWeb.TestController do
       {:ok, summary} ->
         "<span class='success'>✓ Success!</span>\nSummary: #{summary}"
 
-      {:error, reason} ->
-        "<span class='error'>❌ Error</span>\n#{inspect(reason, pretty: true)}"
+      _ ->
+        "<span class='error'>❌ Unexpected response</span>"
     end
   end
 end
