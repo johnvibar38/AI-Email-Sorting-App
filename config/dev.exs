@@ -1,11 +1,8 @@
 import Config
 
+# Note: Database configuration is in config/runtime.exs to support .env file loading
 # Configure your database
 config :jump, Jump.Repo,
-  username: System.get_env("POSTGRES_USER") || "postgres",
-  password: System.get_env("POSTGRES_PASSWORD") || "aiddyr",
-  hostname: System.get_env("POSTGRES_HOST") || "localhost",
-  database: System.get_env("DATABASE") || "jump_db",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
