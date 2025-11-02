@@ -19,7 +19,7 @@ services:
       echo "Running assets deploy..."
       MIX_ENV=prod mix assets.deploy
       MIX_ENV=prod mix release
-    startCommand: _build/prod/rel/jump/bin/jump start
+    startCommand: _build/prod/rel/jump/bin/jump eval "Jump.Release.migrate()" && _build/prod/rel/jump/bin/jump start
     healthCheckPath: /
     envVars:
       - key: MIX_ENV
