@@ -33,4 +33,3 @@ defmodule JumpWeb.HomeLive.Index do
     """
   end
 end
-

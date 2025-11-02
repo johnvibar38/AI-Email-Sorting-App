@@ -46,29 +46,36 @@ if config_env() == :prod do
 
   # Guardian secret key (optional - we're using Phoenix.Token instead)
   if System.get_env("GUARDIAN_SECRET_KEY") do
-    config :jump, Jump.Guardian,
-      secret_key: System.get_env("GUARDIAN_SECRET_KEY")
+    config :jump, Jump.Guardian, secret_key: System.get_env("GUARDIAN_SECRET_KEY")
   end
 
   # Google OAuth credentials
   config :ueberauth, Ueberauth.Strategy.Google.OAuth,
-    client_id: System.get_env("GOOGLE_CLIENT_ID") ||
-      raise("environment variable GOOGLE_CLIENT_ID is missing."),
-    client_secret: System.get_env("GOOGLE_CLIENT_SECRET") ||
-      raise("environment variable GOOGLE_CLIENT_SECRET is missing.")
+    client_id:
+      System.get_env("GOOGLE_CLIENT_ID") ||
+        raise("environment variable GOOGLE_CLIENT_ID is missing."),
+    client_secret:
+      System.get_env("GOOGLE_CLIENT_SECRET") ||
+        raise("environment variable GOOGLE_CLIENT_SECRET is missing.")
 
   # OpenAI API key
   config :openai,
-    api_key: System.get_env("OPENAI_API_KEY") ||
-      raise("environment variable OPENAI_API_KEY is missing.")
+    api_key:
+      System.get_env("OPENAI_API_KEY") ||
+        raise("environment variable OPENAI_API_KEY is missing.")
 
   # Cloak encryption key
   config :jump, Jump.Vault,
     ciphers: [
-      default: {Cloak.Ciphers.AES.GCM, tag: "AES.GCM.V1", key: Base.decode64!(
-        System.get_env("CLOAK_KEY") ||
-          raise("environment variable CLOAK_KEY is missing. Generate with: Base.encode64(:crypto.strong_rand_bytes(32))")
-      )}
+      default:
+        {Cloak.Ciphers.AES.GCM,
+         tag: "AES.GCM.V1",
+         key:
+           Base.decode64!(
+             System.get_env("CLOAK_KEY") ||
+               raise(
+                 "environment variable CLOAK_KEY is missing. Generate with: Base.encode64(:crypto.strong_rand_bytes(32))"
+               )
+           )}
     ]
 end
-

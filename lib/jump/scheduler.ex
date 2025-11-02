@@ -19,4 +19,3 @@ defmodule Jump.Scheduler do
     :ok
   end
 end
-

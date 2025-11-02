@@ -19,10 +19,17 @@ defmodule Jump.Accounts.GoogleAccount do
   @doc false
   def changeset(google_account, attrs) do
     google_account
-    |> cast(attrs, [:user_id, :email, :access_token, :refresh_token, :expires_at, :last_synced_at, :history_id])
+    |> cast(attrs, [
+      :user_id,
+      :email,
+      :access_token,
+      :refresh_token,
+      :expires_at,
+      :last_synced_at,
+      :history_id
+    ])
     |> validate_required([:user_id, :email, :access_token, :refresh_token, :expires_at])
     |> unique_constraint(:email)
     |> foreign_key_constraint(:user_id)
   end
 end
-

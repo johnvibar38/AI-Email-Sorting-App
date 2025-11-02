@@ -56,4 +56,3 @@ defmodule Jump.DataCase do
     end)
   end
 end
-

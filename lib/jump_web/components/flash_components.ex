@@ -75,4 +75,3 @@ defmodule JumpWeb.FlashComponents do
     """
   end
 end
-

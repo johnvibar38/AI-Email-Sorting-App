@@ -24,4 +24,3 @@ defmodule Jump.Accounts.User do
     |> unique_constraint([:provider, :provider_id])
   end
 end
-

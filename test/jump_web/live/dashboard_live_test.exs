@@ -7,12 +7,13 @@ defmodule JumpWeb.DashboardLiveTest do
   alias Jump.EmailManagement
 
   setup do
-    {:ok, user} = Accounts.create_user(%{
-      email: "test@example.com",
-      name: "Test User",
-      provider: "google",
-      provider_id: "12345"
-    })
+    {:ok, user} =
+      Accounts.create_user(%{
+        email: "test@example.com",
+        name: "Test User",
+        provider: "google",
+        provider_id: "12345"
+      })
 
     %{user: user}
   end
@@ -43,11 +44,12 @@ defmodule JumpWeb.DashboardLiveTest do
 
     test "displays existing categories", %{conn: conn, user: user} do
       # Create a category first
-      {:ok, _category} = EmailManagement.create_category(%{
-        user_id: user.id,
-        name: "Newsletters",
-        description: "Marketing emails"
-      })
+      {:ok, _category} =
+        EmailManagement.create_category(%{
+          user_id: user.id,
+          name: "Newsletters",
+          description: "Marketing emails"
+        })
 
       conn = log_in_user(conn, user)
       {:ok, _view, html} = live(conn, ~p"/dashboard")
@@ -58,11 +60,12 @@ defmodule JumpWeb.DashboardLiveTest do
     end
 
     test "displays categories with email counts", %{conn: conn, user: user} do
-      {:ok, _category} = EmailManagement.create_category(%{
-        user_id: user.id,
-        name: "Work",
-        description: "Work emails"
-      })
+      {:ok, _category} =
+        EmailManagement.create_category(%{
+          user_id: user.id,
+          name: "Work",
+          description: "Work emails"
+        })
 
       conn = log_in_user(conn, user)
       {:ok, _view, html} = live(conn, ~p"/dashboard")
@@ -80,4 +83,3 @@ defmodule JumpWeb.DashboardLiveTest do
     |> Plug.Conn.put_session(:user_token, token)
   end
 end
-

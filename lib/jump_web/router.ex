@@ -69,4 +69,3 @@ defmodule JumpWeb.Router do
     end
   end
 end
-

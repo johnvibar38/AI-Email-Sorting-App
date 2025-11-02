@@ -9,4 +9,3 @@
 
 # Example:
 # Jump.Accounts.create_user(%{email: "test@example.com", name: "Test User"})
-

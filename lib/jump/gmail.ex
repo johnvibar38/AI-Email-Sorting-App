@@ -15,7 +15,7 @@ defmodule Jump.Gmail do
   """
   def fetch_new_emails(%GoogleAccount{} = account) do
     since = get_sync_start_time(account)
-    
+
     with {:ok, access_token} <- ensure_valid_token(account),
          {:ok, messages} <- Client.list_messages(access_token, since: since, max_results: 50),
          {:ok, emails} <- Client.fetch_message_details(access_token, messages) do
@@ -82,4 +82,3 @@ defmodule Jump.Gmail do
     DateTime.compare(expires_at, DateTime.add(DateTime.utc_now(), 300, :second)) == :lt
   end
 end
-

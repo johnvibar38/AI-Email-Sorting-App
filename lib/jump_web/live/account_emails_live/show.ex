@@ -14,7 +14,7 @@ defmodule JumpWeb.AccountEmailsLive.Show do
     if account && account.user_id == socket.assigns.current_user.id do
       # Get all emails for this account across all categories
       emails = EmailManagement.list_emails_by_account(account.id)
-      
+
       {:ok,
        socket
        |> assign(:account, account)
@@ -62,7 +62,7 @@ defmodule JumpWeb.AccountEmailsLive.Show do
 
     if selected_ids != [] do
       {:ok, count} = EmailManagement.bulk_delete_emails(selected_ids)
-      
+
       # Refresh emails
       emails = EmailManagement.list_emails_by_account(socket.assigns.account.id)
 
@@ -347,4 +347,3 @@ defmodule JumpWeb.AccountEmailsLive.Show do
     Calendar.strftime(datetime, "%b %d, %Y at %I:%M %p")
   end
 end
-

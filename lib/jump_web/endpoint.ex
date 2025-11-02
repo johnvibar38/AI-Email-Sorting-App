@@ -10,8 +10,7 @@ defmodule JumpWeb.Endpoint do
     signing_salt: "jump_signing_salt"
   ]
 
-  socket "/live", Phoenix.LiveView.Socket,
-    websocket: [connect_info: [session: @session_options]]
+  socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
 
   # Serve at "/" the static files from "priv/static" directory.
   #
@@ -43,4 +42,3 @@ defmodule JumpWeb.Endpoint do
   plug Plug.Session, @session_options
   plug JumpWeb.Router
 end
-

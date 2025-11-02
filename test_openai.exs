@@ -95,4 +95,3 @@ end
 
 # Run the test
 OpenAITest.test_connection()
-

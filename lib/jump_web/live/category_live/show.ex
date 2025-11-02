@@ -14,24 +14,27 @@ defmodule JumpWeb.CategoryLive.Show do
     if category do
       # Get all Google accounts for the user
       google_accounts = Accounts.list_google_accounts(socket.assigns.current_user.id)
-      
+
       # Get emails grouped by account
-      emails_by_account = EmailManagement.list_emails_by_category_grouped_by_account(
-        category.id,
-        socket.assigns.current_user.id
-      )
-      
+      emails_by_account =
+        EmailManagement.list_emails_by_category_grouped_by_account(
+          category.id,
+          socket.assigns.current_user.id
+        )
+
       # Default to first account's emails (or all if no accounts)
-      {selected_account_id, initial_emails} = 
+      {selected_account_id, initial_emails} =
         case google_accounts do
           [first_account | _] ->
             # Show first account's emails by default
-            emails = EmailManagement.list_emails_by_category_and_account(
-              category.id,
-              first_account.id
-            )
+            emails =
+              EmailManagement.list_emails_by_category_and_account(
+                category.id,
+                first_account.id
+              )
+
             {first_account.id, emails}
-          
+
           [] ->
             # No accounts, show empty
             {nil, []}
@@ -84,13 +87,14 @@ defmodule JumpWeb.CategoryLive.Show do
   @impl true
   def handle_event("filter_by_account", %{"account_id" => account_id}, socket) do
     account_id = String.to_integer(account_id)
-    
+
     # Filter emails by specific account
-    filtered_emails = EmailManagement.list_emails_by_category_and_account(
-      socket.assigns.category.id,
-      account_id
-    )
-    
+    filtered_emails =
+      EmailManagement.list_emails_by_category_and_account(
+        socket.assigns.category.id,
+        account_id
+      )
+
     {:noreply,
      socket
      |> assign(:selected_account_id, account_id)
@@ -400,4 +404,3 @@ defmodule JumpWeb.CategoryLive.Show do
     |> String.replace("\n", "<br>")
   end
 end
-

@@ -68,4 +68,3 @@ defmodule Jump.MixProject do
     ]
   end
 end
-

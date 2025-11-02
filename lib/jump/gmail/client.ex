@@ -16,7 +16,7 @@ defmodule Jump.Gmail.Client do
   """
   def list_messages(access_token, opts \\ []) do
     max_results = Keyword.get(opts, :max_results, 50)
-    
+
     query = build_query(opts)
 
     params = %{
@@ -39,15 +39,17 @@ defmodule Jump.Gmail.Client do
   # Build Gmail search query
   defp build_query(opts) do
     base_query = "in:inbox is:unread"
-    
+
     case Keyword.get(opts, :since) do
-      nil -> 
+      nil ->
         base_query
-      %DateTime{} = dt -> 
+
+      %DateTime{} = dt ->
         # Gmail uses YYYY/MM/DD format for after: query
         date_str = Calendar.strftime(dt, "%Y/%m/%d")
         "#{base_query} after:#{date_str}"
-      _ -> 
+
+      _ ->
         base_query
     end
   end
@@ -73,7 +75,9 @@ defmodule Jump.Gmail.Client do
   Gets a single message with full details.
   """
   def get_message(access_token, message_id) do
-    case http_get("#{@gmail_api_base}/users/me/messages/#{message_id}", access_token, %{format: "full"}) do
+    case http_get("#{@gmail_api_base}/users/me/messages/#{message_id}", access_token, %{
+           format: "full"
+         }) do
       {:ok, message} ->
         {:ok, parse_message(message)}
 
@@ -88,7 +92,11 @@ defmodule Jump.Gmail.Client do
   def archive_message(access_token, message_id) do
     body = Jason.encode!(%{removeLabelIds: ["INBOX"]})
 
-    case http_post("#{@gmail_api_base}/users/me/messages/#{message_id}/modify", access_token, body) do
+    case http_post(
+           "#{@gmail_api_base}/users/me/messages/#{message_id}/modify",
+           access_token,
+           body
+         ) do
       {:ok, _response} -> {:ok, :archived}
       error -> error
     end
@@ -99,7 +107,9 @@ defmodule Jump.Gmail.Client do
   """
   def refresh_access_token(refresh_token) do
     client_id = Application.get_env(:ueberauth, Ueberauth.Strategy.Google.OAuth)[:client_id]
-    client_secret = Application.get_env(:ueberauth, Ueberauth.Strategy.Google.OAuth)[:client_secret]
+
+    client_secret =
+      Application.get_env(:ueberauth, Ueberauth.Strategy.Google.OAuth)[:client_secret]
 
     body =
       URI.encode_query(%{
@@ -181,7 +191,7 @@ defmodule Jump.Gmail.Client do
 
   defp parse_message(message) do
     headers = get_headers(message)
-    
+
     %{
       id: message["id"],
       thread_id: message["threadId"],
@@ -262,4 +272,3 @@ defmodule Jump.Gmail.Client do
     _ -> ""
   end
 end
-

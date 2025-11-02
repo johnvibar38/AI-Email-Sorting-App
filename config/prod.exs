@@ -22,4 +22,3 @@ config :jump, Jump.Repo,
   database: System.get_env("DATABASE_NAME") || "jump_prod",
   pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
   ssl: System.get_env("DATABASE_SSL") == "true"
-

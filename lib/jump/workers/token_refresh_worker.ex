@@ -64,4 +64,3 @@ defmodule Jump.Workers.TokenRefreshWorker do
     end
   end
 end
-

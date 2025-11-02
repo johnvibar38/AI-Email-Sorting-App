@@ -104,18 +104,18 @@ defmodule Jump.AI do
 
     """
     You are analyzing an unsubscribe page to determine how to unsubscribe.
-    
+
     URL: #{url}
-    
+
     HTML Content:
     #{truncated_html}
-    
+
     Respond in JSON format with these fields:
     - action: "click_button", "fill_form", "already_unsubscribed", or "unknown"
     - selector: CSS selector for the button/form element to interact with
     - form_data: If action is "fill_form", provide key-value pairs for form fields
     - instructions: Human-readable instructions
-    
+
     Example response:
     {
       "action": "click_button",
@@ -197,4 +197,3 @@ defmodule Jump.AI do
     end
   end
 end
-

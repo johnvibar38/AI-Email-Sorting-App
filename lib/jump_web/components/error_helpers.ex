@@ -45,4 +45,3 @@ defmodule JumpWeb.ErrorHelpers do
     end
   end
 end
-

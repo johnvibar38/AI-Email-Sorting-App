@@ -36,4 +36,3 @@ defmodule Jump.Application do
     :ok
   end
 end
-

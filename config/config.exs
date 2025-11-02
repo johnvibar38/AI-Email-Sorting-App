@@ -57,11 +57,14 @@ config :jump, Jump.Guardian,
 # Ueberauth Google OAuth configuration with Gmail scopes
 config :ueberauth, Ueberauth,
   providers: [
-    google: {Ueberauth.Strategy.Google, [
-      default_scope: "email profile https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.modify",
-      access_type: "offline",
-      prompt: "consent"
-    ]}
+    google:
+      {Ueberauth.Strategy.Google,
+       [
+         default_scope:
+           "email profile https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.modify",
+         access_type: "offline",
+         prompt: "consent"
+       ]}
   ]
 
 config :ueberauth, Ueberauth.Strategy.Google.OAuth,
@@ -80,12 +83,14 @@ config :jump, Jump.Vault,
     default: {
       Cloak.Ciphers.AES.GCM,
       tag: "AES.GCM.V1",
-      key: Base.decode64!(System.get_env("CLOAK_KEY") || Base.encode64(:crypto.strong_rand_bytes(32)))
+      key:
+        Base.decode64!(
+          System.get_env("CLOAK_KEY") || Base.encode64(:crypto.strong_rand_bytes(32))
+        )
     }
   ]
 
-config :jump, Jump.Repo,
-  migration_timestamps: [type: :utc_datetime]
+config :jump, Jump.Repo, migration_timestamps: [type: :utc_datetime]
 
 # Oban configuration
 config :jump, Oban,
@@ -96,4 +101,3 @@ config :jump, Oban,
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
-

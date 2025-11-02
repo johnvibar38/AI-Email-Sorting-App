@@ -6,12 +6,13 @@ defmodule Jump.EmailManagementTest do
 
   describe "categories" do
     setup do
-      {:ok, user} = Accounts.create_user(%{
-        email: "test@example.com",
-        name: "Test User",
-        provider: "google",
-        provider_id: "12345"
-      })
+      {:ok, user} =
+        Accounts.create_user(%{
+          email: "test@example.com",
+          name: "Test User",
+          provider: "google",
+          provider_id: "12345"
+        })
 
       %{user: user}
     end
@@ -49,6 +50,7 @@ defmodule Jump.EmailManagementTest do
       {:ok, category} = EmailManagement.create_category(%{user_id: user.id, name: "Work"})
 
       assert {:ok, _} = EmailManagement.delete_category(category)
+
       assert_raise Ecto.NoResultsError, fn ->
         EmailManagement.get_category!(category.id)
       end
@@ -57,27 +59,30 @@ defmodule Jump.EmailManagementTest do
 
   describe "emails" do
     setup do
-      {:ok, user} = Accounts.create_user(%{
-        email: "test@example.com",
-        name: "Test User",
-        provider: "google",
-        provider_id: "12345"
-      })
+      {:ok, user} =
+        Accounts.create_user(%{
+          email: "test@example.com",
+          name: "Test User",
+          provider: "google",
+          provider_id: "12345"
+        })
 
-      {:ok, google_account} = Accounts.create_or_update_google_account(
-        user.id,
-        "test@gmail.com",
-        %{
-          access_token: "token",
-          refresh_token: "refresh",
-          expires_at: DateTime.add(DateTime.utc_now(), 3600, :second)
-        }
-      )
+      {:ok, google_account} =
+        Accounts.create_or_update_google_account(
+          user.id,
+          "test@gmail.com",
+          %{
+            access_token: "token",
+            refresh_token: "refresh",
+            expires_at: DateTime.add(DateTime.utc_now(), 3600, :second)
+          }
+        )
 
-      {:ok, category} = EmailManagement.create_category(%{
-        user_id: user.id,
-        name: "Work"
-      })
+      {:ok, category} =
+        EmailManagement.create_category(%{
+          user_id: user.id,
+          name: "Work"
+        })
 
       %{user: user, google_account: google_account, category: category}
     end
@@ -151,4 +156,3 @@ defmodule Jump.EmailManagementTest do
     |> Repo.insert()
   end
 end
-

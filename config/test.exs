@@ -14,17 +14,19 @@ database_config =
     ]
   end
 
-config :jump, Jump.Repo,
-  Keyword.merge(database_config, [
-    pool: Ecto.Adapters.SQL.Sandbox,
-    pool_size: 10
-  ])
+config :jump,
+       Jump.Repo,
+       Keyword.merge(database_config,
+         pool: Ecto.Adapters.SQL.Sandbox,
+         pool_size: 10
+       )
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
 config :jump, JumpWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
-  secret_key_base: "test_secret_key_base_for_testing_must_be_at_least_64_bytes_long_to_work_properly_in_phoenix",
+  secret_key_base:
+    "test_secret_key_base_for_testing_must_be_at_least_64_bytes_long_to_work_properly_in_phoenix",
   server: false
 
 # In test we don't send emails.
@@ -45,4 +47,3 @@ config :wallaby,
 
 # Disable Oban in tests (use testing: :manual to prevent auto-start)
 config :jump, Oban, testing: :manual
-

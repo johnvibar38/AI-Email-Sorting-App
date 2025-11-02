@@ -22,4 +22,3 @@ defmodule Jump.Unsubscribe.UnsubscribeJob do
     |> foreign_key_constraint(:email_id)
   end
 end
-

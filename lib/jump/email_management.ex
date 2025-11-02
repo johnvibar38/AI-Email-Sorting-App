@@ -17,7 +17,7 @@ defmodule Jump.EmailManagement do
   def list_categories(user_id) do
     Category
     |> where([c], c.user_id == ^user_id)
-    |> order_by([c], [asc: c.position, asc: c.inserted_at])
+    |> order_by([c], asc: c.position, asc: c.inserted_at)
     |> Repo.all()
   end
 
@@ -33,7 +33,7 @@ defmodule Jump.EmailManagement do
       category: c,
       email_count: count(e.id)
     })
-    |> order_by([c], [asc: c.position, asc: c.inserted_at])
+    |> order_by([c], asc: c.position, asc: c.inserted_at)
     |> Repo.all()
   end
 
@@ -122,10 +122,11 @@ defmodule Jump.EmailManagement do
       end)
 
     # Return success if at least one category was created
-    successful = Enum.filter(results, fn
-      {:ok, _} -> true
-      _ -> false
-    end)
+    successful =
+      Enum.filter(results, fn
+        {:ok, _} -> true
+        _ -> false
+      end)
 
     if length(successful) > 0 do
       {:ok, successful}
@@ -152,7 +153,11 @@ defmodule Jump.EmailManagement do
   """
   def list_emails_by_category_and_account(category_id, google_account_id) do
     Email
-    |> where([e], e.category_id == ^category_id and e.google_account_id == ^google_account_id and e.deleted == false)
+    |> where(
+      [e],
+      e.category_id == ^category_id and e.google_account_id == ^google_account_id and
+        e.deleted == false
+    )
     |> order_by([e], desc: e.received_at)
     |> preload(:google_account)
     |> Repo.all()
@@ -164,8 +169,11 @@ defmodule Jump.EmailManagement do
   def list_emails_by_category_grouped_by_account(category_id, user_id) do
     Email
     |> join(:inner, [e], g in GoogleAccount, on: e.google_account_id == g.id)
-    |> where([e, g], e.category_id == ^category_id and g.user_id == ^user_id and e.deleted == false)
-    |> order_by([e], [asc: e.google_account_id, desc: e.received_at])
+    |> where(
+      [e, g],
+      e.category_id == ^category_id and g.user_id == ^user_id and e.deleted == false
+    )
+    |> order_by([e], asc: e.google_account_id, desc: e.received_at)
     |> preload(:google_account)
     |> Repo.all()
     |> Enum.group_by(& &1.google_account)
@@ -305,4 +313,3 @@ defmodule Jump.EmailManagement do
 
   defp extract_email_address(_), do: nil
 end
-

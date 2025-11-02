@@ -37,4 +37,3 @@ defmodule Jump.Workers.UnsubscribeWorker do
     |> Oban.insert()
   end
 end
-

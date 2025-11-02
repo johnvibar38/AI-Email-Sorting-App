@@ -46,4 +46,3 @@ defmodule JumpWeb.Telemetry do
     ]
   end
 end
-

@@ -7,22 +7,24 @@ defmodule Jump.Workers.EmailSyncWorkerTest do
 
   describe "perform/1" do
     setup do
-      {:ok, user} = Accounts.create_user(%{
-        email: "test@example.com",
-        name: "Test User",
-        provider: "google",
-        provider_id: "12345"
-      })
+      {:ok, user} =
+        Accounts.create_user(%{
+          email: "test@example.com",
+          name: "Test User",
+          provider: "google",
+          provider_id: "12345"
+        })
 
-      {:ok, account} = Accounts.create_or_update_google_account(
-        user.id,
-        "test@gmail.com",
-        %{
-          access_token: "token",
-          refresh_token: "refresh",
-          expires_at: DateTime.add(DateTime.utc_now(), 3600, :second)
-        }
-      )
+      {:ok, account} =
+        Accounts.create_or_update_google_account(
+          user.id,
+          "test@gmail.com",
+          %{
+            access_token: "token",
+            refresh_token: "refresh",
+            expires_at: DateTime.add(DateTime.utc_now(), 3600, :second)
+          }
+        )
 
       %{user: user, account: account}
     end
@@ -36,4 +38,3 @@ defmodule Jump.Workers.EmailSyncWorkerTest do
     end
   end
 end
-

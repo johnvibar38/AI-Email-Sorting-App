@@ -155,4 +155,3 @@ defmodule Jump.Accounts do
     Repo.delete(account)
   end
 end
-

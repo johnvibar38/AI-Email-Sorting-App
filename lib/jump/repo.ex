@@ -3,4 +3,3 @@ defmodule Jump.Repo do
     otp_app: :jump,
     adapter: Ecto.Adapters.Postgres
 end
-

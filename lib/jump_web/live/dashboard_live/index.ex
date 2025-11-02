@@ -9,17 +9,19 @@ defmodule JumpWeb.DashboardLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    google_accounts = if connected?(socket) do
-      Accounts.list_google_accounts(socket.assigns.current_user.id)
-    else
-      []
-    end
+    google_accounts =
+      if connected?(socket) do
+        Accounts.list_google_accounts(socket.assigns.current_user.id)
+      else
+        []
+      end
 
-    categories = if connected?(socket) do
-      EmailManagement.list_categories_with_counts(socket.assigns.current_user.id)
-    else
-      []
-    end
+    categories =
+      if connected?(socket) do
+        EmailManagement.list_categories_with_counts(socket.assigns.current_user.id)
+      else
+        []
+      end
 
     {:ok,
      socket
@@ -80,7 +82,8 @@ defmodule JumpWeb.DashboardLive.Index do
       category ->
         case EmailManagement.delete_category(category) do
           {:ok, _} ->
-            categories = EmailManagement.list_categories_with_counts(socket.assigns.current_user.id)
+            categories =
+              EmailManagement.list_categories_with_counts(socket.assigns.current_user.id)
 
             {:noreply,
              socket
@@ -438,6 +441,7 @@ defmodule JumpWeb.DashboardLive.Index do
       :gt ->
         # Less than 24 hours ago
         diff = DateTime.diff(DateTime.utc_now(), timestamp, :second)
+
         cond do
           diff < 60 -> "Just now"
           diff < 3600 -> "#{div(diff, 60)} min ago"
@@ -450,4 +454,3 @@ defmodule JumpWeb.DashboardLive.Index do
     end
   end
 end
-

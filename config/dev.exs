@@ -45,4 +45,3 @@ config :phoenix, :plug_init_mode, :runtime
 
 # Enable dev routes for /dev/* endpoints (LiveDashboard, Mailbox, etc.)
 config :jump, dev_routes: true
-

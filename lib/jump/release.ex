@@ -25,4 +25,3 @@ defmodule Jump.Release do
     Application.load(@app)
   end
 end
-

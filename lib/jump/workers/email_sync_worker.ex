@@ -22,15 +22,14 @@ defmodule Jump.Workers.EmailSyncWorker do
     with {:ok, account} <- fetch_account(account_id),
          {:ok, user_id} <- {:ok, account.user_id},
          categories <- EmailManagement.list_categories(user_id) do
-      
       # Log sync info
       sync_type = if account.last_synced_at, do: "incremental", else: "initial"
       Logger.info("Running #{sync_type} sync for account #{account_id}")
-      
+
       case Gmail.fetch_new_emails(account) do
         {:ok, emails} ->
           process_emails(account, emails, categories)
-          
+
           # Update last synced timestamp
           Accounts.update_google_account_sync(account, %{
             last_synced_at: DateTime.utc_now()
@@ -38,7 +37,7 @@ defmodule Jump.Workers.EmailSyncWorker do
 
           Logger.info("Successfully synced #{length(emails)} emails for account #{account_id}")
           :ok
-          
+
         {:error, reason} ->
           Logger.error("Failed to fetch emails for account #{account_id}: #{inspect(reason)}")
           {:error, reason}
@@ -70,7 +69,12 @@ defmodule Jump.Workers.EmailSyncWorker do
         |> Oban.insert()
       end)
 
-    success_count = Enum.count(results, fn {:ok, _} -> true; _ -> false end)
+    success_count =
+      Enum.count(results, fn
+        {:ok, _} -> true
+        _ -> false
+      end)
+
     Logger.info("Queued #{success_count} email sync jobs")
 
     :ok
@@ -120,4 +124,3 @@ defmodule Jump.Workers.EmailSyncWorker do
     :ok
   end
 end
-

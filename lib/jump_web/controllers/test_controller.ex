@@ -123,6 +123,7 @@ defmodule JumpWeb.TestController do
 
       {:ok, category_id} ->
         category = Enum.find(test_categories, fn c -> c.id == category_id end)
+
         "<span class='success'>✓ Success!</span>\nCategorized as: #{if category, do: category.name, else: "Unknown"} (ID: #{category_id})"
 
       _ ->
@@ -146,4 +147,3 @@ defmodule JumpWeb.TestController do
     end
   end
 end
-

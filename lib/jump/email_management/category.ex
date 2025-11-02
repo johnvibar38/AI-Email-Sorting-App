@@ -23,4 +23,3 @@ defmodule Jump.EmailManagement.Category do
     |> foreign_key_constraint(:user_id)
   end
 end
-

@@ -11,36 +11,44 @@ defmodule JumpWeb.UserAuth do
   @token_max_age @max_age
 
   def on_mount(:default, _params, session, socket) do
-    socket = Phoenix.Component.assign_new(socket, :current_user, fn ->
-      case session do
-        %{"user_token" => user_token} ->
-          case Phoenix.Token.verify(socket, "user socket", user_token, max_age: @token_max_age) do
-            {:ok, user_id} -> Accounts.get_user(user_id)
-            {:error, _} -> nil
-          end
-        _ -> nil
-      end
-    end)
+    socket =
+      Phoenix.Component.assign_new(socket, :current_user, fn ->
+        case session do
+          %{"user_token" => user_token} ->
+            case Phoenix.Token.verify(socket, "user socket", user_token, max_age: @token_max_age) do
+              {:ok, user_id} -> Accounts.get_user(user_id)
+              {:error, _} -> nil
+            end
+
+          _ ->
+            nil
+        end
+      end)
 
     if socket.assigns.current_user do
       {:cont, socket}
     else
-      socket = Phoenix.LiveView.put_flash(socket, :error, "You must be logged in to access this page")
+      socket =
+        Phoenix.LiveView.put_flash(socket, :error, "You must be logged in to access this page")
+
       {:halt, Phoenix.LiveView.push_navigate(socket, to: ~p"/")}
     end
   end
 
   def on_mount(:allow_unauthenticated, _params, session, socket) do
-    socket = Phoenix.Component.assign_new(socket, :current_user, fn ->
-      case session do
-        %{"user_token" => user_token} ->
-          case Phoenix.Token.verify(socket, "user socket", user_token, max_age: @token_max_age) do
-            {:ok, user_id} -> Accounts.get_user(user_id)
-            {:error, _} -> nil
-          end
-        _ -> nil
-      end
-    end)
+    socket =
+      Phoenix.Component.assign_new(socket, :current_user, fn ->
+        case session do
+          %{"user_token" => user_token} ->
+            case Phoenix.Token.verify(socket, "user socket", user_token, max_age: @token_max_age) do
+              {:ok, user_id} -> Accounts.get_user(user_id)
+              {:error, _} -> nil
+            end
+
+          _ ->
+            nil
+        end
+      end)
 
     {:cont, socket}
   end
@@ -72,6 +80,7 @@ defmodule JumpWeb.UserAuth do
 
   def log_in_user(conn, user) do
     token = Phoenix.Token.sign(conn, "user socket", user.id)
+
     conn
     |> renew_session()
     |> put_session(:user_token, token)
@@ -91,4 +100,3 @@ defmodule JumpWeb.UserAuth do
     |> clear_session()
   end
 end
-

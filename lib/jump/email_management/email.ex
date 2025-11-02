@@ -22,11 +22,21 @@ defmodule Jump.EmailManagement.Email do
   @doc false
   def changeset(email, attrs) do
     email
-    |> cast(attrs, [:google_account_id, :category_id, :gmail_id, :subject, :from_address, :received_at, :content, :ai_summary, :archived, :deleted])
+    |> cast(attrs, [
+      :google_account_id,
+      :category_id,
+      :gmail_id,
+      :subject,
+      :from_address,
+      :received_at,
+      :content,
+      :ai_summary,
+      :archived,
+      :deleted
+    ])
     |> validate_required([:google_account_id, :gmail_id, :received_at])
     |> unique_constraint(:gmail_id)
     |> foreign_key_constraint(:google_account_id)
     |> foreign_key_constraint(:category_id)
   end
 end
-

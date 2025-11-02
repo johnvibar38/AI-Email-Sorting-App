@@ -12,4 +12,3 @@ defmodule JumpWeb.Layouts do
 
   embed_templates "../layouts/*"
 end
-
