@@ -81,7 +81,7 @@ if config_env() == :prod do
     secret_key_base: secret_key_base,
     check_origin: [
       "https://#{host}",
-      "https://ai-email-sorting.onrender.com"
+      "https://ai-email-sorting-app-jatm.onrender.com"
     ]
 
   # Guardian secret key (optional - we're using Phoenix.Token instead)
