@@ -58,8 +58,7 @@ defmodule Jump.MixProject do
       {:cloak_ecto, "~> 1.2"},
       {:wallaby, "~> 0.30", only: :test, runtime: false},
       {:chrome_remote_interface, "~> 0.4"},
-      {:floki, "~> 0.34"},
-      {:dotenvy, "~> 0.8.0", only: [:dev, :test]}
+      {:floki, "~> 0.34"}
     ]
   end
 

@@ -6,38 +6,32 @@ import Config
 # and secrets from environment variables or elsewhere. Do not define
 # any compile-time configuration in here, as it won't be applied.
 
-# Load .env file for development and test environments
-if config_env() in [:dev, :test] and File.exists?(".env") do
-  if Code.ensure_loaded?(Dotenvy) do
-    Dotenvy.source!([".env", System.get_env()])
+# Development environment configuration
+# Uses environment variables directly (set them in your shell or use a .env loader)
+if config_env() == :dev do
+  config :jump, Jump.Repo,
+    username: System.get_env("POSTGRES_USER"),
+    password: System.get_env("POSTGRES_PASSWORD"),
+    hostname: System.get_env("POSTGRES_HOST"),
+    database: System.get_env("DATABASE")
 
-    # Development environment configuration
-    if config_env() == :dev do
-      config :jump, Jump.Repo,
-        username: System.get_env("POSTGRES_USER"),
-        password: System.get_env("POSTGRES_PASSWORD"),
-        hostname: System.get_env("POSTGRES_HOST"),
-        database: System.get_env("DATABASE")
+  # Google OAuth credentials
+  config :ueberauth, Ueberauth.Strategy.Google.OAuth,
+    client_id: System.get_env("GOOGLE_CLIENT_ID"),
+    client_secret: System.get_env("GOOGLE_CLIENT_SECRET")
 
-      # Google OAuth credentials
-      config :ueberauth, Ueberauth.Strategy.Google.OAuth,
-        client_id: System.get_env("GOOGLE_CLIENT_ID"),
-        client_secret: System.get_env("GOOGLE_CLIENT_SECRET")
+  # OpenAI API key
+  config :openai,
+    api_key: System.get_env("OPENAI_API_KEY")
 
-      # OpenAI API key
-      config :openai,
-        api_key: System.get_env("OPENAI_API_KEY")
-
-      # Cloak encryption key
-      config :jump, Jump.Vault,
-        ciphers: [
-          default: {
-            Cloak.Ciphers.AES.GCM,
-            tag: "AES.GCM.V1", key: Base.decode64!(System.get_env("CLOAK_KEY"))
-          }
-        ]
-    end
-  end
+  # Cloak encryption key
+  config :jump, Jump.Vault,
+    ciphers: [
+      default: {
+        Cloak.Ciphers.AES.GCM,
+        tag: "AES.GCM.V1", key: Base.decode64!(System.get_env("CLOAK_KEY"))
+      }
+    ]
 end
 
 if config_env() == :prod do
