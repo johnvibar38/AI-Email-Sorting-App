@@ -12,8 +12,12 @@ defmodule JumpWeb.Endpoint do
 
   socket "/live", Phoenix.LiveView.Socket,
     websocket: [
-      connect_info: [session: @session_options],
-      timeout: 45_000
+      connect_info: [:x_headers, :peer_data, :uri, session: @session_options],
+      timeout: 45_000,
+      compress: false
+    ],
+    longpoll: [
+      connect_info: [:x_headers, :peer_data, :uri, session: @session_options]
     ]
 
   # Serve at "/" the static files from "priv/static" directory.
