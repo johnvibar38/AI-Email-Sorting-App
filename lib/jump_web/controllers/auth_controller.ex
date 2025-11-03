@@ -67,7 +67,8 @@ defmodule JumpWeb.AuthController do
     Logger.info("========================================")
 
     # Redirect to Google OAuth with prompt=consent to force account selection
-    oauth_url = build_add_account_url(conn)
+    # oauth_url = build_add_account_url(conn)
+    oauth_url = 'https://ai-email-sorting-app-jatm.onrender.com/auth/google/add/callback'
 
     Logger.info("========================================")
     Logger.info("REDIRECTING TO GOOGLE OAUTH")
