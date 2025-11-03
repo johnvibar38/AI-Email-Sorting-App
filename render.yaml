@@ -29,7 +29,7 @@ services:
       - key: SECRET_KEY_BASE
         generateValue: true
       - key: DATABASE_URL
-        value: postgresql://john:rlNgfXz1qOYVHWeHkLn0oceeqjhFZAXS@dpg-d43mj1uuk2gs73998igg-a.oregon-postgres.render.com/ai_email_sorting_db?ssl=true
+        sync: false
       - key: PHX_HOST
         sync: false
       - key: GOOGLE_CLIENT_ID

@@ -52,6 +52,32 @@ defmodule Jump.EmailManagement do
   end
 
   @doc """
+  Gets the "Other" system category for a user, creating it if it doesn't exist.
+  """
+  def get_or_create_other_category(user_id) do
+    case Repo.one(
+           from c in Category,
+           where: c.user_id == ^user_id and c.name == "Other" and c.is_system == true
+         ) do
+      nil ->
+        # Create the "Other" category if it doesn't exist
+        case create_category(%{
+               user_id: user_id,
+               name: "Other",
+               description: "Emails that don't fit into other categories",
+               position: 999,
+               is_system: true
+             }) do
+          {:ok, category} -> category
+          {:error, _} -> nil
+        end
+
+      category ->
+        category
+    end
+  end
+
+  @doc """
   Creates a category.
   """
   def create_category(attrs \\ %{}) do
@@ -71,7 +97,12 @@ defmodule Jump.EmailManagement do
 
   @doc """
   Deletes a category.
+  System categories cannot be deleted.
   """
+  def delete_category(%Category{is_system: true} = _category) do
+    {:error, :cannot_delete_system_category}
+  end
+
   def delete_category(%Category{} = category) do
     Repo.delete(category)
   end
@@ -91,27 +122,38 @@ defmodule Jump.EmailManagement do
       %{
         name: "Newsletters",
         description: "Marketing emails, updates, and promotional content",
-        position: 1
+        position: 1,
+        is_system: false
       },
       %{
         name: "Work",
         description: "Job-related emails, client communications, team updates",
-        position: 2
+        position: 2,
+        is_system: false
       },
       %{
         name: "Personal",
         description: "Family, friends, personal correspondence",
-        position: 3
+        position: 3,
+        is_system: false
       },
       %{
         name: "Receipts",
         description: "Purchase confirmations, invoices, shipping notifications",
-        position: 4
+        position: 4,
+        is_system: false
       },
       %{
         name: "Social Media",
         description: "Notifications from Facebook, Twitter, LinkedIn",
-        position: 5
+        position: 5,
+        is_system: false
+      },
+      %{
+        name: "Other",
+        description: "Emails that don't fit into other categories",
+        position: 999,
+        is_system: true
       }
     ]
 
@@ -144,7 +186,7 @@ defmodule Jump.EmailManagement do
     Email
     |> where([e], e.category_id == ^category_id and e.deleted == false)
     |> order_by([e], desc: e.received_at)
-    |> preload(:google_account)
+    |> preload([:google_account, :category, :unsubscribe_jobs])
     |> Repo.all()
   end
 
@@ -159,7 +201,7 @@ defmodule Jump.EmailManagement do
         e.deleted == false
     )
     |> order_by([e], desc: e.received_at)
-    |> preload(:google_account)
+    |> preload([:google_account, :category, :unsubscribe_jobs])
     |> Repo.all()
   end
 
@@ -174,7 +216,7 @@ defmodule Jump.EmailManagement do
       e.category_id == ^category_id and g.user_id == ^user_id and e.deleted == false
     )
     |> order_by([e], asc: e.google_account_id, desc: e.received_at)
-    |> preload(:google_account)
+    |> preload([:google_account, :category, :unsubscribe_jobs])
     |> Repo.all()
     |> Enum.group_by(& &1.google_account)
   end
@@ -186,7 +228,7 @@ defmodule Jump.EmailManagement do
     Email
     |> where([e], e.google_account_id == ^google_account_id and e.deleted == false)
     |> order_by([e], desc: e.received_at)
-    |> preload([:google_account, :category])
+    |> preload([:google_account, :category, :unsubscribe_jobs])
     |> Repo.all()
   end
 
@@ -217,13 +259,30 @@ defmodule Jump.EmailManagement do
 
   @doc """
   Imports an email from Gmail and categorizes it with AI.
+  If AI categorization returns nil, uses the "Other" system category.
   """
   def import_email(google_account_id, gmail_data, categories) do
     with {:ok, category_id} <- AI.categorize_email(gmail_data, categories),
          {:ok, summary} <- AI.summarize_email(gmail_data) do
+      # If AI couldn't categorize (category_id is nil), use "Other" category
+      final_category_id =
+        if category_id == nil do
+          # Get the user_id from the google_account
+          google_account = Repo.get(GoogleAccount, google_account_id)
+
+          if google_account do
+            other_category = get_or_create_other_category(google_account.user_id)
+            if other_category, do: other_category.id, else: nil
+          else
+            nil
+          end
+        else
+          category_id
+        end
+
       attrs = %{
         google_account_id: google_account_id,
-        category_id: category_id,
+        category_id: final_category_id,
         gmail_id: gmail_data.id,
         subject: gmail_data.subject,
         from_address: extract_email_address(gmail_data.from),

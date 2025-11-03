@@ -45,6 +45,16 @@ defmodule Jump.Gmail do
   end
 
   @doc """
+  Moves an email back to inbox in Gmail (adds INBOX label).
+  """
+  def move_to_inbox(%GoogleAccount{} = account, gmail_id) do
+    with {:ok, access_token} <- ensure_valid_token(account),
+         {:ok, _response} <- Client.move_to_inbox(access_token, gmail_id) do
+      {:ok, :moved_to_inbox}
+    end
+  end
+
+  @doc """
   Refreshes the access token if expired or about to expire.
   """
   def refresh_token(%GoogleAccount{} = account) do

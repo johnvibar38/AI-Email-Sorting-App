@@ -103,6 +103,22 @@ defmodule Jump.Gmail.Client do
   end
 
   @doc """
+  Moves a message back to inbox (adds INBOX label).
+  """
+  def move_to_inbox(access_token, message_id) do
+    body = Jason.encode!(%{addLabelIds: ["INBOX"]})
+
+    case http_post(
+           "#{@gmail_api_base}/users/me/messages/#{message_id}/modify",
+           access_token,
+           body
+         ) do
+      {:ok, _response} -> {:ok, :moved_to_inbox}
+      error -> error
+    end
+  end
+
+  @doc """
   Refreshes an access token using a refresh token.
   """
   def refresh_access_token(refresh_token) do

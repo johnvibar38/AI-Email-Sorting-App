@@ -36,10 +36,26 @@ defmodule Jump.Workers.EmailSyncWorker do
           })
 
           Logger.info("Successfully synced #{length(emails)} emails for account #{account_id}")
+
+          # Broadcast sync completion
+          Phoenix.PubSub.broadcast(
+            Jump.PubSub,
+            "email_sync:#{user_id}",
+            {:sync_completed, account_id}
+          )
+
           :ok
 
         {:error, reason} ->
           Logger.error("Failed to fetch emails for account #{account_id}: #{inspect(reason)}")
+
+          # Broadcast sync failure
+          Phoenix.PubSub.broadcast(
+            Jump.PubSub,
+            "email_sync:#{user_id}",
+            {:sync_failed, account_id}
+          )
+
           {:error, reason}
       end
     else

@@ -78,7 +78,11 @@ if config_env() == :prod do
       ip: {0, 0, 0, 0},
       port: port
     ],
-    secret_key_base: secret_key_base
+    secret_key_base: secret_key_base,
+    check_origin: [
+      "https://#{host}",
+      "https://ai-email-sorting.onrender.com"
+    ]
 
   # Guardian secret key (optional - we're using Phoenix.Token instead)
   if System.get_env("GUARDIAN_SECRET_KEY") do

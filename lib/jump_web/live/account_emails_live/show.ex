@@ -12,13 +12,18 @@ defmodule JumpWeb.AccountEmailsLive.Show do
     account = Accounts.get_google_account_by_id(String.to_integer(account_id))
 
     if account && account.user_id == socket.assigns.current_user.id do
+      # Get all categories for this user
+      categories = EmailManagement.list_categories(socket.assigns.current_user.id)
+
       # Get all emails for this account across all categories
       emails = EmailManagement.list_emails_by_account(account.id)
 
       {:ok,
        socket
        |> assign(:account, account)
+       |> assign(:categories, categories)
        |> assign(:emails, emails)
+       |> assign(:selected_category_id, nil)
        |> assign(:selected_emails, MapSet.new())
        |> assign(:show_email_modal, false)
        |> assign(:selected_email, nil)}
@@ -57,6 +62,33 @@ defmodule JumpWeb.AccountEmailsLive.Show do
   end
 
   @impl true
+  def handle_event("filter_by_category", %{"category_id" => category_id}, socket) do
+    category_id =
+      if category_id == "all" do
+        nil
+      else
+        String.to_integer(category_id)
+      end
+
+    # Get filtered emails
+    emails =
+      if category_id do
+        EmailManagement.list_emails_by_category_and_account(
+          category_id,
+          socket.assigns.account.id
+        )
+      else
+        EmailManagement.list_emails_by_account(socket.assigns.account.id)
+      end
+
+    {:noreply,
+     socket
+     |> assign(:selected_category_id, category_id)
+     |> assign(:emails, emails)
+     |> assign(:selected_emails, MapSet.new())}
+  end
+
+  @impl true
   def handle_event("bulk_delete", _, socket) do
     selected_ids = MapSet.to_list(socket.assigns.selected_emails)
 
@@ -81,15 +113,42 @@ defmodule JumpWeb.AccountEmailsLive.Show do
     selected_ids = MapSet.to_list(socket.assigns.selected_emails)
 
     if selected_ids != [] do
-      # Schedule unsubscribe jobs for each email
-      Enum.each(selected_ids, fn email_id ->
-        Unsubscribe.queue_unsubscribe_job(email_id)
-      end)
+      # Get the full email structs for selected IDs
+      selected_emails = Enum.filter(socket.assigns.emails, fn email -> email.id in selected_ids end)
+
+      # Move emails back to inbox and schedule unsubscribe jobs
+      {jobs_queued, skipped} =
+        Enum.reduce(selected_emails, {0, 0}, fn email, {queued, skipped} ->
+          # Move email back to Gmail inbox
+          Jump.Gmail.move_to_inbox(email.google_account, email.gmail_id)
+
+          # Queue unsubscribe job
+          case Unsubscribe.queue_unsubscribe_job(email) do
+            {:ok, _} -> {queued + 1, skipped}
+            {:error, :no_url} -> {queued, skipped + 1}
+            {:error, _} -> {queued, skipped}
+          end
+        end)
+
+      message =
+        cond do
+          jobs_queued > 0 && skipped > 0 ->
+            "Moved #{length(selected_emails)} email(s) to inbox. Queued #{jobs_queued} unsubscribe job(s). #{skipped} email(s) don't have unsubscribe links."
+
+          jobs_queued > 0 ->
+            "Moved #{jobs_queued} email(s) to inbox and queued unsubscribe jobs"
+
+          skipped > 0 ->
+            "Moved #{skipped} email(s) to inbox but they don't have unsubscribe links"
+
+          true ->
+            "No emails processed"
+        end
 
       {:noreply,
        socket
        |> assign(:selected_emails, MapSet.new())
-       |> put_flash(:info, "Unsubscribe jobs scheduled for #{length(selected_ids)} email(s)")}
+       |> put_flash(:info, message)}
     else
       {:noreply, socket}
     end
@@ -133,11 +192,66 @@ defmodule JumpWeb.AccountEmailsLive.Show do
               </div>
               <div>
                 <h1 class="text-3xl font-bold text-gray-900"><%= @account.email %></h1>
-                <p class="mt-1 text-gray-600">All emails from this account</p>
+                <p class="mt-1 text-gray-600">
+                  <%= if @selected_category_id do %>
+                    Showing emails from selected category
+                  <% else %>
+                    All emails from this account
+                  <% end %>
+                </p>
               </div>
             </div>
           </div>
 
+          <!-- Main Content with Sidebar -->
+          <div class="flex gap-6">
+            <!-- Left Sidebar - Categories -->
+            <div class="w-64 flex-shrink-0">
+              <div class="bg-white rounded-lg shadow p-4 sticky top-4">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Categories</h2>
+                <nav class="space-y-1">
+                  <button
+                    phx-click="filter_by_category"
+                    phx-value-category_id="all"
+                    class={"w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors #{if @selected_category_id == nil, do: "bg-blue-100 text-blue-700", else: "text-gray-700 hover:bg-gray-100"}"}
+                  >
+                    <div class="flex items-center justify-between">
+                      <span>All Emails</span>
+                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                      </svg>
+                    </div>
+                  </button>
+
+                  <%= if @categories == [] do %>
+                    <p class="text-sm text-gray-500 px-3 py-2">No categories yet</p>
+                  <% else %>
+                    <%= for category <- @categories do %>
+                      <button
+                        phx-click="filter_by_category"
+                        phx-value-category_id={category.id}
+                        class={"w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors #{if @selected_category_id == category.id, do: "bg-green-100 text-green-700", else: "text-gray-700 hover:bg-gray-100"}"}
+                      >
+                        <div class="flex items-center justify-between">
+                          <span class="truncate"><%= category.name %></span>
+                          <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                              fill-rule="evenodd"
+                              d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                              clip-rule="evenodd"
+                            />
+                          </svg>
+                        </div>
+                      </button>
+                    <% end %>
+                  <% end %>
+                </nav>
+              </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="flex-1">
           <!-- Bulk Actions Bar -->
           <%= if MapSet.size(@selected_emails) > 0 do %>
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
@@ -151,13 +265,15 @@ defmodule JumpWeb.AccountEmailsLive.Show do
                   </button>
                 </div>
                 <div class="flex space-x-3">
-                  <button
-                    phx-click="bulk_unsubscribe"
-                    data-confirm="Are you sure you want to unsubscribe from the selected emails?"
-                    class="px-4 py-2 bg-yellow-600 text-white text-sm font-medium rounded hover:bg-yellow-700"
-                  >
-                    Unsubscribe
-                  </button>
+                  <%= if can_unsubscribe_selected?(@selected_emails, @emails) do %>
+                    <button
+                      phx-click="bulk_unsubscribe"
+                      data-confirm="Are you sure you want to unsubscribe from the selected emails?"
+                      class="px-4 py-2 bg-yellow-600 text-white text-sm font-medium rounded hover:bg-yellow-700"
+                    >
+                      Unsubscribe
+                    </button>
+                  <% end %>
                   <button
                     phx-click="bulk_delete"
                     data-confirm="Are you sure you want to delete the selected emails?"
@@ -242,6 +358,25 @@ defmodule JumpWeb.AccountEmailsLive.Show do
                                 Uncategorized
                               </span>
                             <% end %>
+                            <%= case get_unsubscribe_status(email) do %>
+                              <% "completed" -> %>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                  ✓ Unsubscribed
+                                </span>
+                              <% "processing" -> %>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                  ⏳ Processing
+                                </span>
+                              <% "pending" -> %>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                  ⏳ Pending
+                                </span>
+                              <% "failed" -> %>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                  ✗ Failed
+                                </span>
+                              <% _ -> %>
+                            <% end %>
                           </div>
                           <p class="text-xs text-gray-500 flex-shrink-0 ml-2">
                             <%= format_date(email.received_at) %>
@@ -261,6 +396,8 @@ defmodule JumpWeb.AccountEmailsLive.Show do
                 <% end %>
               </div>
             <% end %>
+          </div>
+            </div>
           </div>
         </div>
       </div>
@@ -327,7 +464,11 @@ defmodule JumpWeb.AccountEmailsLive.Show do
                     <div>
                       <dt class="text-sm font-medium text-gray-500 mb-2">Original Content</dt>
                       <dd class="mt-1 text-sm text-gray-900 bg-gray-50 p-4 rounded max-h-96 overflow-y-auto">
-                        <%= @selected_email.content || "No content available" %>
+                        <%= if @selected_email.content do %>
+                          <%= raw(format_email_content(@selected_email.content)) %>
+                        <% else %>
+                          <p class="text-gray-500">No content available</p>
+                        <% end %>
                       </dd>
                     </div>
                   </dl>
@@ -345,5 +486,45 @@ defmodule JumpWeb.AccountEmailsLive.Show do
 
   defp format_date(datetime) do
     Calendar.strftime(datetime, "%b %d, %Y at %I:%M %p")
+  end
+
+  # Format email content - detect if HTML or plain text
+  defp format_email_content(nil), do: "<p class='text-gray-500'>No content available</p>"
+
+  defp format_email_content(content) when is_binary(content) do
+    # Check if content looks like HTML
+    if String.contains?(content, ["<html", "<HTML", "<!DOCTYPE", "<body", "<div", "<p>"]) do
+      # It's HTML, return as-is
+      content
+    else
+      # It's plain text, convert newlines to <br> and wrap in <p>
+      content
+      |> String.trim()
+      |> String.replace(~r/\r\n|\r|\n/, "<br>")
+      |> then(&"<p style='white-space: pre-wrap; word-wrap: break-word;'>#{&1}</p>")
+    end
+  end
+
+  # Helper to get unsubscribe status for an email
+  defp get_unsubscribe_status(email) do
+    case email.unsubscribe_jobs do
+      [] ->
+        nil
+
+      jobs ->
+        # Get the most recent job
+        latest_job = Enum.max_by(jobs, & &1.inserted_at)
+        latest_job.status
+    end
+  end
+
+  # Helper to check if any selected emails can be unsubscribed
+  defp can_unsubscribe_selected?(selected_email_ids, emails) do
+    selected_email_ids
+    |> MapSet.to_list()
+    |> Enum.any?(fn email_id ->
+      email = Enum.find(emails, &(&1.id == email_id))
+      email && get_unsubscribe_status(email) != "completed"
+    end)
   end
 end
