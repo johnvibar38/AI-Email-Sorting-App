@@ -11,7 +11,7 @@ if config_env() in [:dev, :test] and File.exists?(".env") do
   if Code.ensure_loaded?(Dotenvy) do
     import Dotenvy
     source!([".env", System.get_env()])
-    
+
     # Development environment configuration
     if config_env() == :dev do
       config :jump, Jump.Repo,
@@ -19,23 +19,22 @@ if config_env() in [:dev, :test] and File.exists?(".env") do
         password: env!("POSTGRES_PASSWORD", :string),
         hostname: env!("POSTGRES_HOST", :string),
         database: env!("DATABASE", :string)
-        
+
       # Google OAuth credentials
       config :ueberauth, Ueberauth.Strategy.Google.OAuth,
         client_id: env!("GOOGLE_CLIENT_ID", :string),
         client_secret: env!("GOOGLE_CLIENT_SECRET", :string)
-      
+
       # OpenAI API key
       config :openai,
         api_key: env!("OPENAI_API_KEY", :string)
-      
+
       # Cloak encryption key
       config :jump, Jump.Vault,
         ciphers: [
           default: {
             Cloak.Ciphers.AES.GCM,
-            tag: "AES.GCM.V1",
-            key: Base.decode64!(env!("CLOAK_KEY", :string))
+            tag: "AES.GCM.V1", key: Base.decode64!(env!("CLOAK_KEY", :string))
           }
         ]
     end

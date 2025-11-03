@@ -162,7 +162,8 @@ defmodule JumpWeb.DashboardLive.Index do
     account = Accounts.get_google_account_by_id(String.to_integer(account_id))
 
     # Verify the account belongs to the current user
-    account = if account && account.user_id == socket.assigns.current_user.id, do: account, else: nil
+    account =
+      if account && account.user_id == socket.assigns.current_user.id, do: account, else: nil
 
     {:noreply,
      socket

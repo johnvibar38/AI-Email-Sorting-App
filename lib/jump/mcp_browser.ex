@@ -164,4 +164,3 @@ defmodule Jump.MCPBrowser do
 
   defp escape_quotes(other), do: to_string(other)
 end
-

@@ -114,7 +114,8 @@ defmodule JumpWeb.AccountEmailsLive.Show do
 
     if selected_ids != [] do
       # Get the full email structs for selected IDs
-      selected_emails = Enum.filter(socket.assigns.emails, fn email -> email.id in selected_ids end)
+      selected_emails =
+        Enum.filter(socket.assigns.emails, fn email -> email.id in selected_ids end)
 
       # Move emails back to inbox and schedule unsubscribe jobs
       {jobs_queued, skipped} =

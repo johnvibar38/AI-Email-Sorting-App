@@ -57,7 +57,7 @@ defmodule Jump.EmailManagement do
   def get_or_create_other_category(user_id) do
     case Repo.one(
            from c in Category,
-           where: c.user_id == ^user_id and c.name == "Other" and c.is_system == true
+             where: c.user_id == ^user_id and c.name == "Other" and c.is_system == true
          ) do
       nil ->
         # Create the "Other" category if it doesn't exist
