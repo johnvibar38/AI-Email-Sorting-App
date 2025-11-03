@@ -291,12 +291,26 @@ defmodule JumpWeb.AuthController do
     # Get host and port from endpoint config
     host = Keyword.get(url_config, :host, "localhost")
     configured_port = Keyword.get(url_config, :port)
+    configured_scheme = Keyword.get(url_config, :scheme)
+
+    # Get environment
+    env = Application.get_env(:jump, :env)
+
+    # Log all the configuration details
+    Logger.info("=== REDIRECT URI BUILDER DEBUG ===")
+    Logger.info("Path requested: #{path}")
+    Logger.info("Environment detected: #{inspect(env)}")
+    Logger.info("All app config keys: #{inspect(Application.get_all_env(:jump) |> Keyword.keys())}")
+    Logger.info("Endpoint URL config: #{inspect(url_config)}")
+    Logger.info("  - host: #{inspect(host)}")
+    Logger.info("  - configured_port: #{inspect(configured_port)}")
+    Logger.info("  - configured_scheme: #{inspect(configured_scheme)}")
 
     # Determine scheme based on environment
     # Production: always HTTPS
     # Development/Test: always HTTP
-    env = Application.get_env(:jump, :env)
     scheme = if env == :prod, do: "https", else: "http"
+    Logger.info("Determined scheme: #{scheme} (based on env: #{inspect(env)})")
 
     # Determine port to use in the URI
     # Omit standard ports (443 for HTTPS, 80 for HTTP) for cleaner URLs
@@ -308,6 +322,7 @@ defmodule JumpWeb.AuthController do
       {"http", nil} -> 4000  # Default dev port
       {_, port} -> port
     end
+    Logger.info("Determined port: #{inspect(port)}")
 
     # Build the URL
     uri = %URI{
@@ -317,6 +332,10 @@ defmodule JumpWeb.AuthController do
       path: path
     }
 
-    URI.to_string(uri)
+    final_uri = URI.to_string(uri)
+    Logger.info("Final redirect URI: #{final_uri}")
+    Logger.info("=== END REDIRECT URI DEBUG ===")
+
+    final_uri
   end
 end
