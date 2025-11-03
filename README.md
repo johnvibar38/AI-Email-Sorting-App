@@ -1,6 +1,10 @@
-# Jump - AI Email Sorter
+# Challenge - AI Email Sorter
 
 An intelligent email management application that automatically categorizes and summarizes your emails using AI. Built with Elixir, Phoenix LiveView, and OpenAI.
+
+## 🚀 Live Demo
+
+**[Try Live](https://ai-email-sorting-app-jatm.onrender.com)** - Experience the AI email sorting in action!
 
 ## Tech Stack
 
@@ -10,7 +14,7 @@ An intelligent email management application that automatically categorizes and s
 - **Google OAuth** - Authentication via Google Sign-In
 - **Tailwind CSS** - Utility-first CSS framework
 - **Render.com** - Deployment platform (no credit card required!)
-- **OpenAI GPT-4** - AI categorization and summarization
+- **OpenAI GPT-4o-mini** - AI categorization and summarization
 
 ## Features
 
@@ -62,7 +66,7 @@ mix ecto.setup
 4. Go to "Credentials" and create an OAuth 2.0 Client ID
 5. Add authorized redirect URIs:
    - Development: `http://localhost:4000/auth/google/callback`
-   - Production (Render): `https://your-app-name.onrender.com/auth/google/callback`
+   - Production (Render): `https://ai-email-sorting-app-jatm.onrender.com/auth/google/callback`
 6. Copy your Client ID and Client Secret
 
 ### 4. Configure Environment Variables
@@ -117,28 +121,6 @@ mix ecto.migrate
 mix ecto.rollback
 ```
 
-## Deployment
-
-See [DEPLOYMENT.md](DEPLOYMENT.md) for comprehensive deployment instructions to Render.com.
-
-### Quick Deploy to Render.com (Free, No Credit Card!)
-
-1. Push your code to GitHub
-2. Create a Render.com account (free, no card needed)
-3. Click "New +" → "Web Service"
-4. Connect your GitHub repository
-5. Configure environment variables
-6. Click "Create Web Service"
-
-Detailed step-by-step guide with screenshots available in [DEPLOYMENT.md](DEPLOYMENT.md).
-
-**Free Tier Includes:**
-- ✅ 750 hours/month web service
-- ✅ 1 GB PostgreSQL database (free for 90 days)
-- ✅ Free SSL/HTTPS
-- ✅ Auto-deploy from Git
-- ⚠️ Apps sleep after 15 min inactivity
-
 ## Project Structure
 
 ```
@@ -180,19 +162,17 @@ Detailed step-by-step guide with screenshots available in [DEPLOYMENT.md](DEPLOY
 - `PORT` - Port to run the application on (default: 4000)
 - `POOL_SIZE` - Database connection pool size (default: 10)
 
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
+## Author
+
+**John Michael Vibar**
+
+- **Email**: [johnvincentvibar@gmail.com](mailto:johnvincentvibar@gmail.com)
+
 ## Support
 
-For issues and questions, please open an issue on GitHub.
+For issues and questions, please open an issue on GitHub or contact the author directly.
 

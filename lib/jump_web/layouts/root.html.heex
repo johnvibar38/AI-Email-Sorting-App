@@ -81,6 +81,32 @@
         <.flash_group flash={@flash} />
         <%= @inner_content %>
       </main>
+
+      <!-- Footer -->
+      <footer class="bg-white border-t border-gray-200 mt-auto">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div class="py-6">
+            <div class="flex flex-col items-center justify-center gap-5 space-y-4 md:flex-row md:space-y-0">
+              <div class="flex items-center space-x-2 text-sm text-gray-600">
+                <span>Built by</span>
+                <span class="font-semibold text-gray-900">John Michael Vibar</span>
+              </div>
+
+              <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2 text-sm text-gray-600">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                  </svg>
+                  <span>Contact:</span>
+                  <a href="mailto:johnvincentvibar@gmail.com" class="text-blue-600 hover:text-blue-800 hover:underline">
+                    johnvincentvibar@gmail.com
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   </body>
 </html>
