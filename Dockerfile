@@ -19,8 +19,8 @@ COPY mix.exs mix.lock ./
 RUN mix deps.get --only $MIX_ENV
 RUN mkdir config
 
-# Copy config files
-COPY config/config.exs config/$MIX_ENV.exs config/
+# Copy config files (including runtime.exs which is critical for production)
+COPY config/ config/
 
 # Compile dependencies
 RUN mix deps.compile

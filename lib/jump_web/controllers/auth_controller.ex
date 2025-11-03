@@ -60,19 +60,19 @@ defmodule JumpWeb.AuthController do
   Request to add an additional Gmail account (user already logged in).
   """
   def add_account_request(conn, _params) do
-    Logger.warning("========================================")
-    Logger.warning("ADD ACCOUNT REQUEST STARTED")
-    Logger.warning("User ID: #{conn.assigns.current_user.id}")
-    Logger.warning("Building OAuth URL...")
-    Logger.warning("========================================")
+    Logger.info("========================================")
+    Logger.info("ADD ACCOUNT REQUEST STARTED")
+    Logger.info("User ID: #{conn.assigns.current_user.id}")
+    Logger.info("Building OAuth URL...")
+    Logger.info("========================================")
 
     # Redirect to Google OAuth with prompt=consent to force account selection
     oauth_url = build_add_account_url(conn)
 
-    Logger.warning("========================================")
-    Logger.warning("REDIRECTING TO GOOGLE OAUTH")
-    Logger.warning("OAuth URL: #{oauth_url}")
-    Logger.warning("========================================")
+    Logger.info("========================================")
+    Logger.info("REDIRECTING TO GOOGLE OAUTH")
+    Logger.info("OAuth URL: #{oauth_url}")
+    Logger.info("========================================")
 
     redirect(conn, external: oauth_url)
   end
@@ -84,10 +84,10 @@ defmodule JumpWeb.AuthController do
   def add_account_callback(conn, %{"code" => code} = _params) do
     user = conn.assigns.current_user
 
-    Logger.warning("========================================")
-    Logger.warning("ADD ACCOUNT CALLBACK RECEIVED")
-    Logger.warning("User: #{user.id}, Code present: #{!!code}")
-    Logger.warning("========================================")
+    Logger.info("========================================")
+    Logger.info("ADD ACCOUNT CALLBACK RECEIVED")
+    Logger.info("User: #{user.id}, Code present: #{!!code}")
+    Logger.info("========================================")
 
     case exchange_code_for_tokens(conn, code) do
       {:ok, token_response} ->
@@ -202,18 +202,18 @@ defmodule JumpWeb.AuthController do
   # end
 
   defp build_add_account_url(conn) do
-    Logger.warning(">>> build_add_account_url called")
+    Logger.info(">>> build_add_account_url called")
 
     client_id = Application.get_env(:ueberauth, Ueberauth.Strategy.Google.OAuth)[:client_id]
-    Logger.warning(">>> Client ID present: #{!!client_id}")
+    Logger.info(">>> Client ID present: #{!!client_id}")
 
     # Build the redirect URI using Phoenix's URL helpers to respect force_ssl and proxy headers
     redirect_uri = build_redirect_uri(conn, "/auth/google/add/callback")
 
-    Logger.warning("========================================")
-    Logger.warning("OAUTH REDIRECT URI GENERATED")
-    Logger.warning("redirect_uri: #{redirect_uri}")
-    Logger.warning("========================================")
+    Logger.info("========================================")
+    Logger.info("OAUTH REDIRECT URI GENERATED")
+    Logger.info("redirect_uri: #{redirect_uri}")
+    Logger.info("========================================")
 
     scopes = [
       "email",
@@ -253,10 +253,10 @@ defmodule JumpWeb.AuthController do
     # Build the redirect URI using Phoenix's URL helpers to respect force_ssl and proxy headers
     redirect_uri = build_redirect_uri(conn, "/auth/google/add/callback")
 
-    Logger.warning("========================================")
-    Logger.warning("TOKEN EXCHANGE - Using redirect_uri:")
-    Logger.warning("#{redirect_uri}")
-    Logger.warning("========================================")
+    Logger.info("========================================")
+    Logger.info("TOKEN EXCHANGE - Using redirect_uri:")
+    Logger.info("#{redirect_uri}")
+    Logger.info("========================================")
 
     body =
       URI.encode_query(%{
@@ -318,20 +318,20 @@ defmodule JumpWeb.AuthController do
     env = Application.get_env(:jump, :env)
 
     # Log all the configuration details with WARNING level to ensure visibility
-    Logger.warning("========================================")
-    Logger.warning("BUILD REDIRECT URI - START")
-    Logger.warning("Path: #{path}")
-    Logger.warning("Environment (:jump, :env): #{inspect(env)}")
-    Logger.warning("Endpoint URL config: #{inspect(url_config)}")
-    Logger.warning("  - host: #{inspect(host)}")
-    Logger.warning("  - port: #{inspect(configured_port)}")
-    Logger.warning("  - scheme: #{inspect(configured_scheme)}")
+    Logger.info("========================================")
+    Logger.info("BUILD REDIRECT URI - START")
+    Logger.info("Path: #{path}")
+    Logger.info("Environment (:jump, :env): #{inspect(env)}")
+    Logger.info("Endpoint URL config: #{inspect(url_config)}")
+    Logger.info("  - host: #{inspect(host)}")
+    Logger.info("  - port: #{inspect(configured_port)}")
+    Logger.info("  - scheme: #{inspect(configured_scheme)}")
 
     # Determine scheme based on environment
     # Production: always HTTPS
     # Development/Test: always HTTP
     scheme = if env == :prod, do: "https", else: "http"
-    Logger.warning("Determined scheme: #{scheme} (env==:prod? #{env == :prod})")
+    Logger.info("Determined scheme: #{scheme} (env==:prod? #{env == :prod})")
 
     # Determine port to use in the URI
     # Omit standard ports (443 for HTTPS, 80 for HTTP) for cleaner URLs
@@ -343,7 +343,7 @@ defmodule JumpWeb.AuthController do
       {"http", nil} -> 4000  # Default dev port
       {_, port} -> port
     end
-    Logger.warning("Determined port: #{inspect(port)}")
+    Logger.info("Determined port: #{inspect(port)}")
 
     # Build the URL
     uri = %URI{
@@ -354,9 +354,9 @@ defmodule JumpWeb.AuthController do
     }
 
     final_uri = URI.to_string(uri)
-    Logger.warning("FINAL REDIRECT URI: #{final_uri}")
-    Logger.warning("BUILD REDIRECT URI - END")
-    Logger.warning("========================================")
+    Logger.info("FINAL REDIRECT URI: #{final_uri}")
+    Logger.info("BUILD REDIRECT URI - END")
+    Logger.info("========================================")
 
     final_uri
   end
