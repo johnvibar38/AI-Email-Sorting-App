@@ -60,8 +60,21 @@ defmodule JumpWeb.AuthController do
   Request to add an additional Gmail account (user already logged in).
   """
   def add_account_request(conn, _params) do
+    Logger.warning("========================================")
+    Logger.warning("ADD ACCOUNT REQUEST STARTED")
+    Logger.warning("User ID: #{conn.assigns.current_user.id}")
+    Logger.warning("Building OAuth URL...")
+    Logger.warning("========================================")
+
     # Redirect to Google OAuth with prompt=consent to force account selection
-    redirect(conn, external: build_add_account_url(conn))
+    oauth_url = build_add_account_url(conn)
+
+    Logger.warning("========================================")
+    Logger.warning("REDIRECTING TO GOOGLE OAUTH")
+    Logger.warning("OAuth URL: #{oauth_url}")
+    Logger.warning("========================================")
+
+    redirect(conn, external: oauth_url)
   end
 
   @doc """
@@ -71,7 +84,10 @@ defmodule JumpWeb.AuthController do
   def add_account_callback(conn, %{"code" => code} = _params) do
     user = conn.assigns.current_user
 
-    Logger.info("Add account callback - User: #{user.id}, Code present: #{!!code}")
+    Logger.warning("========================================")
+    Logger.warning("ADD ACCOUNT CALLBACK RECEIVED")
+    Logger.warning("User: #{user.id}, Code present: #{!!code}")
+    Logger.warning("========================================")
 
     case exchange_code_for_tokens(conn, code) do
       {:ok, token_response} ->
@@ -186,14 +202,18 @@ defmodule JumpWeb.AuthController do
   # end
 
   defp build_add_account_url(conn) do
+    Logger.warning(">>> build_add_account_url called")
+
     client_id = Application.get_env(:ueberauth, Ueberauth.Strategy.Google.OAuth)[:client_id]
+    Logger.warning(">>> Client ID present: #{!!client_id}")
 
     # Build the redirect URI using Phoenix's URL helpers to respect force_ssl and proxy headers
     redirect_uri = build_redirect_uri(conn, "/auth/google/add/callback")
 
-    Logger.info("=== OAuth Redirect URI Debug ===")
-    Logger.info("Generated redirect_uri: #{redirect_uri}")
-    Logger.info("================================")
+    Logger.warning("========================================")
+    Logger.warning("OAUTH REDIRECT URI GENERATED")
+    Logger.warning("redirect_uri: #{redirect_uri}")
+    Logger.warning("========================================")
 
     scopes = [
       "email",
@@ -233,9 +253,10 @@ defmodule JumpWeb.AuthController do
     # Build the redirect URI using Phoenix's URL helpers to respect force_ssl and proxy headers
     redirect_uri = build_redirect_uri(conn, "/auth/google/add/callback")
 
-    Logger.info("=== Token Exchange Redirect URI ===")
-    Logger.info("Using redirect_uri: #{redirect_uri}")
-    Logger.info("===================================")
+    Logger.warning("========================================")
+    Logger.warning("TOKEN EXCHANGE - Using redirect_uri:")
+    Logger.warning("#{redirect_uri}")
+    Logger.warning("========================================")
 
     body =
       URI.encode_query(%{
@@ -296,21 +317,21 @@ defmodule JumpWeb.AuthController do
     # Get environment
     env = Application.get_env(:jump, :env)
 
-    # Log all the configuration details
-    Logger.info("=== REDIRECT URI BUILDER DEBUG ===")
-    Logger.info("Path requested: #{path}")
-    Logger.info("Environment detected: #{inspect(env)}")
-    Logger.info("All app config keys: #{inspect(Application.get_all_env(:jump) |> Keyword.keys())}")
-    Logger.info("Endpoint URL config: #{inspect(url_config)}")
-    Logger.info("  - host: #{inspect(host)}")
-    Logger.info("  - configured_port: #{inspect(configured_port)}")
-    Logger.info("  - configured_scheme: #{inspect(configured_scheme)}")
+    # Log all the configuration details with WARNING level to ensure visibility
+    Logger.warning("========================================")
+    Logger.warning("BUILD REDIRECT URI - START")
+    Logger.warning("Path: #{path}")
+    Logger.warning("Environment (:jump, :env): #{inspect(env)}")
+    Logger.warning("Endpoint URL config: #{inspect(url_config)}")
+    Logger.warning("  - host: #{inspect(host)}")
+    Logger.warning("  - port: #{inspect(configured_port)}")
+    Logger.warning("  - scheme: #{inspect(configured_scheme)}")
 
     # Determine scheme based on environment
     # Production: always HTTPS
     # Development/Test: always HTTP
     scheme = if env == :prod, do: "https", else: "http"
-    Logger.info("Determined scheme: #{scheme} (based on env: #{inspect(env)})")
+    Logger.warning("Determined scheme: #{scheme} (env==:prod? #{env == :prod})")
 
     # Determine port to use in the URI
     # Omit standard ports (443 for HTTPS, 80 for HTTP) for cleaner URLs
@@ -322,7 +343,7 @@ defmodule JumpWeb.AuthController do
       {"http", nil} -> 4000  # Default dev port
       {_, port} -> port
     end
-    Logger.info("Determined port: #{inspect(port)}")
+    Logger.warning("Determined port: #{inspect(port)}")
 
     # Build the URL
     uri = %URI{
@@ -333,8 +354,9 @@ defmodule JumpWeb.AuthController do
     }
 
     final_uri = URI.to_string(uri)
-    Logger.info("Final redirect URI: #{final_uri}")
-    Logger.info("=== END REDIRECT URI DEBUG ===")
+    Logger.warning("FINAL REDIRECT URI: #{final_uri}")
+    Logger.warning("BUILD REDIRECT URI - END")
+    Logger.warning("========================================")
 
     final_uri
   end
