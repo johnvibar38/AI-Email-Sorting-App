@@ -11,6 +11,7 @@ defmodule Jump.EmailManagement.Email do
     field :ai_summary, :string
     field :archived, :boolean, default: false
     field :deleted, :boolean, default: false
+    field :is_unsubscribed, :boolean, default: false
 
     belongs_to :google_account, Jump.Accounts.GoogleAccount
     belongs_to :category, Jump.EmailManagement.Category
@@ -32,7 +33,8 @@ defmodule Jump.EmailManagement.Email do
       :content,
       :ai_summary,
       :archived,
-      :deleted
+      :deleted,
+      :is_unsubscribed
     ])
     |> validate_required([:google_account_id, :gmail_id, :received_at])
     |> unique_constraint(:gmail_id)

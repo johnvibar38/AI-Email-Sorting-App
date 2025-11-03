@@ -38,6 +38,22 @@ defmodule Jump.EmailManagement do
   end
 
   @doc """
+  Returns the list of categories with email counts for a specific account.
+  """
+  def list_categories_with_counts_for_account(user_id, account_id) do
+    Category
+    |> where([c], c.user_id == ^user_id)
+    |> join(:left, [c], e in Email, on: e.category_id == c.id and e.google_account_id == ^account_id and e.deleted == false)
+    |> group_by([c], c.id)
+    |> select([c, e], %{
+      category: c,
+      email_count: count(e.id)
+    })
+    |> order_by([c], asc: c.position, asc: c.inserted_at)
+    |> Repo.all()
+  end
+
+  @doc """
   Gets a single category.
   """
   def get_category!(id), do: Repo.get!(Category, id)
@@ -357,6 +373,15 @@ defmodule Jump.EmailManagement do
   def update_email_category(%Email{} = email, category_id) do
     email
     |> Email.changeset(%{category_id: category_id})
+    |> Repo.update()
+  end
+
+  @doc """
+  Updates an email.
+  """
+  def update_email(%Email{} = email, attrs) do
+    email
+    |> Email.changeset(attrs)
     |> Repo.update()
   end
 

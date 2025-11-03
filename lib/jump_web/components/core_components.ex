@@ -24,7 +24,7 @@ defmodule JumpWeb.CoreComponents do
 
   def flash_group(assigns) do
     ~H"""
-    <div id={@id} phx-hook="Flash" class="rounded-lg bg-zinc-900 p-3">
+    <div id={@id} phx-hook="Flash" class="bg-zinc-900 p-3">
       <div :if={@title} class="mb-2 text-sm font-semibold text-zinc-400">
         <%= @title %>
       </div>
