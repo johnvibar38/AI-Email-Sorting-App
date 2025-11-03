@@ -67,8 +67,7 @@ defmodule JumpWeb.AuthController do
     Logger.info("========================================")
 
     # Redirect to Google OAuth with prompt=consent to force account selection
-    # oauth_url = build_add_account_url(conn)
-    oauth_url = 'https://ai-email-sorting-app-jatm.onrender.com/auth/google/add/callback'
+    oauth_url = build_add_account_url(conn)
 
     Logger.info("========================================")
     Logger.info("REDIRECTING TO GOOGLE OAUTH")
@@ -209,7 +208,8 @@ defmodule JumpWeb.AuthController do
     Logger.info(">>> Client ID present: #{!!client_id}")
 
     # Build the redirect URI using Phoenix's URL helpers to respect force_ssl and proxy headers
-    redirect_uri = build_redirect_uri(conn, "/auth/google/add/callback")
+    # redirect_uri = build_redirect_uri(conn, "/auth/google/add/callback")
+    redirect_uri = 'https://ai-email-sorting-app-jatm.onrender.com/auth/google/add/callback'
 
     Logger.info("========================================")
     Logger.info("OAUTH REDIRECT URI GENERATED")
