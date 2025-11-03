@@ -9,32 +9,31 @@ import Config
 # Load .env file for development and test environments
 if config_env() in [:dev, :test] and File.exists?(".env") do
   if Code.ensure_loaded?(Dotenvy) do
-    import Dotenvy
-    source!([".env", System.get_env()])
+    Dotenvy.source!([".env", System.get_env()])
 
     # Development environment configuration
     if config_env() == :dev do
       config :jump, Jump.Repo,
-        username: env!("POSTGRES_USER", :string),
-        password: env!("POSTGRES_PASSWORD", :string),
-        hostname: env!("POSTGRES_HOST", :string),
-        database: env!("DATABASE", :string)
+        username: System.get_env("POSTGRES_USER"),
+        password: System.get_env("POSTGRES_PASSWORD"),
+        hostname: System.get_env("POSTGRES_HOST"),
+        database: System.get_env("DATABASE")
 
       # Google OAuth credentials
       config :ueberauth, Ueberauth.Strategy.Google.OAuth,
-        client_id: env!("GOOGLE_CLIENT_ID", :string),
-        client_secret: env!("GOOGLE_CLIENT_SECRET", :string)
+        client_id: System.get_env("GOOGLE_CLIENT_ID"),
+        client_secret: System.get_env("GOOGLE_CLIENT_SECRET")
 
       # OpenAI API key
       config :openai,
-        api_key: env!("OPENAI_API_KEY", :string)
+        api_key: System.get_env("OPENAI_API_KEY")
 
       # Cloak encryption key
       config :jump, Jump.Vault,
         ciphers: [
           default: {
             Cloak.Ciphers.AES.GCM,
-            tag: "AES.GCM.V1", key: Base.decode64!(env!("CLOAK_KEY", :string))
+            tag: "AES.GCM.V1", key: Base.decode64!(System.get_env("CLOAK_KEY"))
           }
         ]
     end
