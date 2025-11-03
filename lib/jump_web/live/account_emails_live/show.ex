@@ -12,6 +12,9 @@ defmodule JumpWeb.AccountEmailsLive.Show do
     account = Accounts.get_google_account_by_id(String.to_integer(account_id))
 
     if account && account.user_id == socket.assigns.current_user.id do
+      # Subscribe to unsubscribe events for this account
+      Phoenix.PubSub.subscribe(Jump.PubSub, "account_emails:#{account.id}")
+
       # Get all categories for this user
       categories = EmailManagement.list_categories(socket.assigns.current_user.id)
 
@@ -24,6 +27,7 @@ defmodule JumpWeb.AccountEmailsLive.Show do
        |> assign(:categories, categories)
        |> assign(:emails, emails)
        |> assign(:selected_category_id, nil)
+       |> assign(:active_tab, :all)
        |> assign(:selected_emails, MapSet.new())
        |> assign(:show_email_modal, false)
        |> assign(:selected_email, nil)}
@@ -62,6 +66,25 @@ defmodule JumpWeb.AccountEmailsLive.Show do
   end
 
   @impl true
+  def handle_event("switch_tab", %{"tab" => tab}, socket) do
+    active_tab = String.to_existing_atom(tab)
+
+    # Get filtered emails based on category and tab
+    emails =
+      get_filtered_emails(
+        socket.assigns.account.id,
+        socket.assigns.selected_category_id,
+        active_tab
+      )
+
+    {:noreply,
+     socket
+     |> assign(:active_tab, active_tab)
+     |> assign(:emails, emails)
+     |> assign(:selected_emails, MapSet.new())}
+  end
+
+  @impl true
   def handle_event("filter_by_category", %{"category_id" => category_id}, socket) do
     category_id =
       if category_id == "all" do
@@ -70,16 +93,9 @@ defmodule JumpWeb.AccountEmailsLive.Show do
         String.to_integer(category_id)
       end
 
-    # Get filtered emails
+    # Get filtered emails based on category and active tab
     emails =
-      if category_id do
-        EmailManagement.list_emails_by_category_and_account(
-          category_id,
-          socket.assigns.account.id
-        )
-      else
-        EmailManagement.list_emails_by_account(socket.assigns.account.id)
-      end
+      get_filtered_emails(socket.assigns.account.id, category_id, socket.assigns.active_tab)
 
     {:noreply,
      socket
@@ -95,8 +111,13 @@ defmodule JumpWeb.AccountEmailsLive.Show do
     if selected_ids != [] do
       {:ok, count} = EmailManagement.bulk_delete_emails(selected_ids)
 
-      # Refresh emails
-      emails = EmailManagement.list_emails_by_account(socket.assigns.account.id)
+      # Refresh emails with current filters
+      emails =
+        get_filtered_emails(
+          socket.assigns.account.id,
+          socket.assigns.selected_category_id,
+          socket.assigns.active_tab
+        )
 
       {:noreply,
        socket
@@ -146,8 +167,17 @@ defmodule JumpWeb.AccountEmailsLive.Show do
             "No emails processed"
         end
 
+      # Refresh emails with current filters
+      emails =
+        get_filtered_emails(
+          socket.assigns.account.id,
+          socket.assigns.selected_category_id,
+          socket.assigns.active_tab
+        )
+
       {:noreply,
        socket
+       |> assign(:emails, emails)
        |> assign(:selected_emails, MapSet.new())
        |> put_flash(:info, message)}
     else
@@ -171,6 +201,38 @@ defmodule JumpWeb.AccountEmailsLive.Show do
      socket
      |> assign(:show_email_modal, false)
      |> assign(:selected_email, nil)}
+  end
+
+  @impl true
+  def handle_info({:unsubscribe_completed, _email_id}, socket) do
+    # Refresh emails with current filters when unsubscribe completes
+    emails =
+      get_filtered_emails(
+        socket.assigns.account.id,
+        socket.assigns.selected_category_id,
+        socket.assigns.active_tab
+      )
+
+    {:noreply,
+     socket
+     |> assign(:emails, emails)
+     |> put_flash(:info, "Email unsubscribed successfully!")}
+  end
+
+  @impl true
+  def handle_info({:unsubscribe_failed, _email_id}, socket) do
+    # Refresh emails with current filters even on failure (to update status badge)
+    emails =
+      get_filtered_emails(
+        socket.assigns.account.id,
+        socket.assigns.selected_category_id,
+        socket.assigns.active_tab
+      )
+
+    {:noreply,
+     socket
+     |> assign(:emails, emails)
+     |> put_flash(:error, "Failed to unsubscribe from email")}
   end
 
   @impl true
@@ -253,6 +315,52 @@ defmodule JumpWeb.AccountEmailsLive.Show do
 
             <!-- Main Content Area -->
             <div class="flex-1">
+          <!-- Tab Navigation -->
+          <div class="mb-6">
+            <div class="border-b border-gray-200">
+              <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                <button
+                  phx-click="switch_tab"
+                  phx-value-tab="all"
+                  class={[
+                    "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm",
+                    if(@active_tab == :all,
+                      do: "border-blue-500 text-blue-600",
+                      else: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    )
+                  ]}
+                >
+                  <div class="flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                      <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                    </svg>
+                    <span>All Emails</span>
+                  </div>
+                </button>
+
+                <button
+                  phx-click="switch_tab"
+                  phx-value-tab="unsubscribed"
+                  class={[
+                    "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm",
+                    if(@active_tab == :unsubscribed,
+                      do: "border-green-500 text-green-600",
+                      else: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    )
+                  ]}
+                >
+                  <div class="flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Unsubscribed</span>
+                  </div>
+                </button>
+              </nav>
+            </div>
+          </div>
+
           <!-- Bulk Actions Bar -->
           <%= if MapSet.size(@selected_emails) > 0 do %>
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
@@ -266,7 +374,7 @@ defmodule JumpWeb.AccountEmailsLive.Show do
                   </button>
                 </div>
                 <div class="flex space-x-3">
-                  <%= if can_unsubscribe_selected?(@selected_emails, @emails) do %>
+                  <%= if @active_tab == :all && can_unsubscribe_selected?(@selected_emails, @emails) do %>
                     <button
                       phx-click="bulk_unsubscribe"
                       data-confirm="Are you sure you want to unsubscribe from the selected emails?"
@@ -527,5 +635,34 @@ defmodule JumpWeb.AccountEmailsLive.Show do
       email = Enum.find(emails, &(&1.id == email_id))
       email && get_unsubscribe_status(email) != "completed"
     end)
+  end
+
+  # Helper to get filtered emails based on account, category, and tab
+  defp get_filtered_emails(account_id, category_id, active_tab) do
+    # First get emails by account and category
+    emails =
+      if category_id do
+        EmailManagement.list_emails_by_category_and_account(category_id, account_id)
+      else
+        EmailManagement.list_emails_by_account(account_id)
+      end
+
+    # Then filter by tab
+    case active_tab do
+      :all ->
+        # Exclude unsubscribed emails from "All Emails" tab
+        Enum.filter(emails, fn email ->
+          get_unsubscribe_status(email) != "completed"
+        end)
+
+      :unsubscribed ->
+        # Show only unsubscribed emails in "Unsubscribed" tab
+        Enum.filter(emails, fn email ->
+          get_unsubscribe_status(email) == "completed"
+        end)
+
+      _ ->
+        emails
+    end
   end
 end

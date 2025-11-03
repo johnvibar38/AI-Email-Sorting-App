@@ -15,15 +15,35 @@ defmodule Jump.Workers.UnsubscribeWorker do
   def perform(%Oban.Job{args: %{"unsubscribe_job_id" => job_id}}) do
     Logger.info("Processing unsubscribe job #{job_id}")
 
-    job = Unsubscribe.get_unsubscribe_job!(job_id)
+    job = Unsubscribe.get_unsubscribe_job!(job_id) |> Jump.Repo.preload(:email)
 
     case Unsubscribe.perform_unsubscribe(job) do
       {:ok, _result} ->
         Logger.info("Successfully completed unsubscribe job #{job_id}")
+
+        # Broadcast completion event for real-time UI updates
+        if job.email do
+          Phoenix.PubSub.broadcast(
+            Jump.PubSub,
+            "account_emails:#{job.email.google_account_id}",
+            {:unsubscribe_completed, job.email.id}
+          )
+        end
+
         :ok
 
       {:error, reason} ->
         Logger.error("Failed to process unsubscribe job #{job_id}: #{inspect(reason)}")
+
+        # Broadcast failure event
+        if job.email do
+          Phoenix.PubSub.broadcast(
+            Jump.PubSub,
+            "account_emails:#{job.email.google_account_id}",
+            {:unsubscribe_failed, job.email.id}
+          )
+        end
+
         {:error, reason}
     end
   end

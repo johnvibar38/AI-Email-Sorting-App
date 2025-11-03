@@ -189,7 +189,11 @@ defmodule JumpWeb.AuthController do
     client_id = Application.get_env(:ueberauth, Ueberauth.Strategy.Google.OAuth)[:client_id]
 
     # Build the redirect URI using Phoenix's URL helpers to respect force_ssl and proxy headers
-    redirect_uri = unverified_url(conn, "/auth/google/add/callback")
+    redirect_uri = build_redirect_uri(conn, "/auth/google/add/callback")
+
+    Logger.info("=== OAuth Redirect URI Debug ===")
+    Logger.info("Generated redirect_uri: #{redirect_uri}")
+    Logger.info("================================")
 
     scopes = [
       "email",
@@ -227,7 +231,11 @@ defmodule JumpWeb.AuthController do
       Application.get_env(:ueberauth, Ueberauth.Strategy.Google.OAuth)[:client_secret]
 
     # Build the redirect URI using Phoenix's URL helpers to respect force_ssl and proxy headers
-    redirect_uri = unverified_url(conn, "/auth/google/add/callback")
+    redirect_uri = build_redirect_uri(conn, "/auth/google/add/callback")
+
+    Logger.info("=== Token Exchange Redirect URI ===")
+    Logger.info("Using redirect_uri: #{redirect_uri}")
+    Logger.info("===================================")
 
     body =
       URI.encode_query(%{
@@ -269,5 +277,46 @@ defmodule JumpWeb.AuthController do
         Logger.error("HTTP error fetching user info: #{inspect(reason)}")
         {:error, reason}
     end
+  end
+
+  @doc """
+  Builds a redirect URI that respects the endpoint's URL configuration.
+  In production, this will use HTTPS. In development, it uses HTTP.
+  This properly handles X-Forwarded-Proto headers from reverse proxies like Render.
+  """
+  defp build_redirect_uri(_conn, path) do
+    endpoint_config = Application.get_env(:jump, JumpWeb.Endpoint)
+    url_config = Keyword.get(endpoint_config, :url, [])
+
+    # Get host and port from endpoint config
+    host = Keyword.get(url_config, :host, "localhost")
+    configured_port = Keyword.get(url_config, :port)
+
+    # Determine scheme based on environment
+    # Production: always HTTPS
+    # Development/Test: always HTTP
+    env = Application.get_env(:jump, :env)
+    scheme = if env == :prod, do: "https", else: "http"
+
+    # Determine port to use in the URI
+    # Omit standard ports (443 for HTTPS, 80 for HTTP) for cleaner URLs
+    # In development, use 4000 if not specified
+    port = case {scheme, configured_port} do
+      {"https", 443} -> nil
+      {"https", nil} -> nil
+      {"http", 80} -> nil
+      {"http", nil} -> 4000  # Default dev port
+      {_, port} -> port
+    end
+
+    # Build the URL
+    uri = %URI{
+      scheme: scheme,
+      host: host,
+      port: port,
+      path: path
+    }
+
+    URI.to_string(uri)
   end
 end
