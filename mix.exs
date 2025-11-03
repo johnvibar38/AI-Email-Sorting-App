@@ -12,7 +12,8 @@ defmodule Jump.MixProject do
       deps: deps(),
       releases: [
         jump: [
-          steps: [:assemble, :tar]
+          steps: [:assemble, :tar],
+          validate_compile_env: false
         ]
       ]
     ]

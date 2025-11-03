@@ -44,12 +44,6 @@ if config_env() == :prod do
   IO.puts("MIX_ENV = #{inspect(System.get_env("MIX_ENV"))}")
   IO.puts("=" |> String.duplicate(60))
 
-  # Set environment for Plug.SSL detection
-  config :jump, :env, :prod
-
-  IO.puts("✅ Set config :jump, :env to :prod")
-  IO.puts("=" |> String.duplicate(60))
-
   database_url =
     System.get_env("DATABASE_URL") ||
       raise """
