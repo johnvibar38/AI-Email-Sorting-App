@@ -300,64 +300,43 @@ defmodule JumpWeb.AuthController do
     end
   end
 
-  @doc """
-  Builds a redirect URI that respects the endpoint's URL configuration.
-  In production, this will use HTTPS. In development, it uses HTTP.
-  This properly handles X-Forwarded-Proto headers from reverse proxies like Render.
-  """
+  # Builds a redirect URI that respects the endpoint's URL configuration.
+  # In production, this will use HTTPS. In development, it uses HTTP.
   defp build_redirect_uri(_conn, path) do
+    # Hardcoded redirect URI generation based on environment
+    # Production: Always HTTPS
+    # Development/Test: Always HTTP
+
+    env = Application.get_env(:jump, :env, :dev)
+
+    # Get host from endpoint config
     endpoint_config = Application.get_env(:jump, JumpWeb.Endpoint)
     url_config = Keyword.get(endpoint_config, :url, [])
-
-    # Get host and port from endpoint config
     host = Keyword.get(url_config, :host, "localhost")
-    configured_port = Keyword.get(url_config, :port)
-    configured_scheme = Keyword.get(url_config, :scheme)
 
-    # Get environment
-    env = Application.get_env(:jump, :env)
+    # Hardcode scheme and port based on environment
+    {scheme, port_string} =
+      case env do
+        :prod ->
+          # Production: Always HTTPS, no port in URL (standard 443)
+          {"https", ""}
 
-    # Log all the configuration details with WARNING level to ensure visibility
+        _ ->
+          # Development/Test: Always HTTP with port 4000
+          {"http", ":4000"}
+      end
+
+    redirect_uri = "#{scheme}://#{host}#{port_string}#{path}"
+
     Logger.info("========================================")
-    Logger.info("BUILD REDIRECT URI - START")
+    Logger.info("REDIRECT URI GENERATED")
+    Logger.info("Environment: #{inspect(env)}")
+    Logger.info("Scheme: #{scheme} (hardcoded)")
+    Logger.info("Host: #{host}")
     Logger.info("Path: #{path}")
-    Logger.info("Environment (:jump, :env): #{inspect(env)}")
-    Logger.info("Endpoint URL config: #{inspect(url_config)}")
-    Logger.info("  - host: #{inspect(host)}")
-    Logger.info("  - port: #{inspect(configured_port)}")
-    Logger.info("  - scheme: #{inspect(configured_scheme)}")
-
-    # Determine scheme based on environment
-    # Production: always HTTPS
-    # Development/Test: always HTTP
-    scheme = if env == :prod, do: "https", else: "http"
-    Logger.info("Determined scheme: #{scheme} (env==:prod? #{env == :prod})")
-
-    # Determine port to use in the URI
-    # Omit standard ports (443 for HTTPS, 80 for HTTP) for cleaner URLs
-    # In development, use 4000 if not specified
-    port = case {scheme, configured_port} do
-      {"https", 443} -> nil
-      {"https", nil} -> nil
-      {"http", 80} -> nil
-      {"http", nil} -> 4000  # Default dev port
-      {_, port} -> port
-    end
-    Logger.info("Determined port: #{inspect(port)}")
-
-    # Build the URL
-    uri = %URI{
-      scheme: scheme,
-      host: host,
-      port: port,
-      path: path
-    }
-
-    final_uri = URI.to_string(uri)
-    Logger.info("FINAL REDIRECT URI: #{final_uri}")
-    Logger.info("BUILD REDIRECT URI - END")
+    Logger.info("Final URI: #{redirect_uri}")
     Logger.info("========================================")
 
-    final_uri
+    redirect_uri
   end
 end
