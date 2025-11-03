@@ -1,7 +1,8 @@
 import Config
 
-# Do not print debug messages in production
-config :logger, level: :info
+# Enable all log levels for debugging (including debug, info, warning, error)
+# Note: Set back to :info after debugging is complete for better performance
+config :logger, level: :debug
 
 # Runtime production configuration, including reading
 # of environment variables, is done on config/runtime.exs.

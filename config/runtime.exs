@@ -42,8 +42,20 @@ if config_env() in [:dev, :test] and File.exists?(".env") do
 end
 
 if config_env() == :prod do
+  # ========================================
+  # PRODUCTION MODE DETECTION
+  # ========================================
+  IO.puts("=" |> String.duplicate(60))
+  IO.puts("🚀 RUNTIME.EXS: ENTERING PRODUCTION MODE")
+  IO.puts("config_env() = #{inspect(config_env())}")
+  IO.puts("MIX_ENV = #{inspect(System.get_env("MIX_ENV"))}")
+  IO.puts("=" |> String.duplicate(60))
+
   # Set environment for Plug.SSL detection
   config :jump, :env, :prod
+
+  IO.puts("✅ Set config :jump, :env to :prod")
+  IO.puts("=" |> String.duplicate(60))
 
   database_url =
     System.get_env("DATABASE_URL") ||
@@ -73,6 +85,13 @@ if config_env() == :prod do
   host = System.get_env("PHX_HOST") || "example.com"
   port = String.to_integer(System.get_env("PORT") || "4000")
 
+  IO.puts("=" |> String.duplicate(60))
+  IO.puts("🌐 PRODUCTION ENDPOINT CONFIGURATION")
+  IO.puts("PHX_HOST = #{inspect(host)}")
+  IO.puts("PORT = #{inspect(port)}")
+  IO.puts("URL will be: https://#{host}:443")
+  IO.puts("=" |> String.duplicate(60))
+
   config :jump, JumpWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],
     http: [
@@ -94,13 +113,21 @@ if config_env() == :prod do
   end
 
   # Google OAuth credentials
+  google_client_id = System.get_env("GOOGLE_CLIENT_ID") ||
+    raise("environment variable GOOGLE_CLIENT_ID is missing.")
+
+  google_client_secret = System.get_env("GOOGLE_CLIENT_SECRET") ||
+    raise("environment variable GOOGLE_CLIENT_SECRET is missing.")
+
+  IO.puts("=" |> String.duplicate(60))
+  IO.puts("🔐 GOOGLE OAUTH CONFIGURATION")
+  IO.puts("GOOGLE_CLIENT_ID present: #{!!google_client_id}")
+  IO.puts("GOOGLE_CLIENT_SECRET present: #{!!google_client_secret}")
+  IO.puts("=" |> String.duplicate(60))
+
   config :ueberauth, Ueberauth.Strategy.Google.OAuth,
-    client_id:
-      System.get_env("GOOGLE_CLIENT_ID") ||
-        raise("environment variable GOOGLE_CLIENT_ID is missing."),
-    client_secret:
-      System.get_env("GOOGLE_CLIENT_SECRET") ||
-        raise("environment variable GOOGLE_CLIENT_SECRET is missing.")
+    client_id: google_client_id,
+    client_secret: google_client_secret
 
   # OpenAI API key
   config :openai,
@@ -122,4 +149,8 @@ if config_env() == :prod do
                )
            )}
     ]
+
+  IO.puts("=" |> String.duplicate(60))
+  IO.puts("✅ PRODUCTION CONFIGURATION COMPLETED")
+  IO.puts("=" |> String.duplicate(60))
 end
