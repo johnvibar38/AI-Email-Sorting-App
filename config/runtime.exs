@@ -42,6 +42,9 @@ if config_env() in [:dev, :test] and File.exists?(".env") do
 end
 
 if config_env() == :prod do
+  # Set environment for Plug.SSL detection
+  config :jump, :env, :prod
+
   database_url =
     System.get_env("DATABASE_URL") ||
       raise """

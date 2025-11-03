@@ -47,6 +47,13 @@ defmodule JumpWeb.Endpoint do
 
   plug Plug.MethodOverride
   plug Plug.Head
+
+  # Rewrite conn based on X-Forwarded headers from load balancer
+  # This makes conn.scheme = "https" when behind HTTPS proxy
+  if Application.compile_env(:jump, :env) == :prod do
+    plug Plug.SSL, rewrite_on: [:x_forwarded_proto], host: nil
+  end
+
   plug Plug.Session, @session_options
   plug JumpWeb.Router
 end
