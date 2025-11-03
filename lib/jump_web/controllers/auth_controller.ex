@@ -168,8 +168,8 @@ defmodule JumpWeb.AuthController do
   # defp create_google_account_for_user(user, %Ueberauth.Auth{} = auth) do
   #   # Just create/update the Google account, don't touch the user
   #   credentials = auth.credentials
-  #   
-  #   expires_at = 
+  #
+  #   expires_at =
   #     case credentials.expires_at do
   #       nil -> DateTime.add(DateTime.utc_now(), credentials.expires || 3600, :second)
   #       timestamp when is_integer(timestamp) -> DateTime.from_unix!(timestamp)
@@ -188,11 +188,8 @@ defmodule JumpWeb.AuthController do
   defp build_add_account_url(conn) do
     client_id = Application.get_env(:ueberauth, Ueberauth.Strategy.Google.OAuth)[:client_id]
 
-    # Build the redirect URI properly
-    scheme = if conn.port == 443, do: "https", else: "http"
-    host = conn.host
-    port = if conn.port in [80, 443], do: "", else: ":#{conn.port}"
-    redirect_uri = "#{scheme}://#{host}#{port}/auth/google/add/callback"
+    # Build the redirect URI using Phoenix's URL helpers to respect force_ssl and proxy headers
+    redirect_uri = unverified_url(conn, "/auth/google/add/callback")
 
     scopes = [
       "email",
@@ -229,10 +226,8 @@ defmodule JumpWeb.AuthController do
     client_secret =
       Application.get_env(:ueberauth, Ueberauth.Strategy.Google.OAuth)[:client_secret]
 
-    scheme = if conn.port == 443, do: "https", else: "http"
-    host = conn.host
-    port = if conn.port in [80, 443], do: "", else: ":#{conn.port}"
-    redirect_uri = "#{scheme}://#{host}#{port}/auth/google/add/callback"
+    # Build the redirect URI using Phoenix's URL helpers to respect force_ssl and proxy headers
+    redirect_uri = unverified_url(conn, "/auth/google/add/callback")
 
     body =
       URI.encode_query(%{

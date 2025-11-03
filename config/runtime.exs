@@ -78,6 +78,7 @@ if config_env() == :prod do
       port: port
     ],
     secret_key_base: secret_key_base,
+    force_ssl: [rewrite_on: [:x_forwarded_proto]],
     check_origin: [
       "https://#{host}",
       "https://ai-email-sorting-app-jatm.onrender.com"
